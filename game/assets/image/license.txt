@@ -1,0 +1,4 @@
+All image files in this directory are generated placeholders for
+"Hannahs Lichtwald". No original third-party art is included in this port.
+See docs/asset-strip.md for the batch list of what these placeholders
+stand for, and THIRD_PARTY.md for the license register.

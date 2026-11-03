@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3 uid="uid://dnpd76kupualq"]
+
+[ext_resource type="Script" uid="uid://bs1ge4pn1w5yn" path="res://resources/game_data/event_data/event_data.gd" id="1_gma7w"]
+
+[resource]
+script = ExtResource("1_gma7w")
+id = "gift_flint_fiber"
+vars = ["fiber", "flint", "wood", "stone"]
+color = Color(0.392157, 0.878431, 0, 1)

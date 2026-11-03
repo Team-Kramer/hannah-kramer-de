@@ -50,11 +50,20 @@ jobs:
       - name: Godot Web export
         if: hashFiles('game/**') != ''
         run: |
-          docker run --rm \
-            -v "$PWD/game:/game" \
-            godotengine/godot:4.4-stable \
-            --headless --path /game \
-            --export-release "The Best Game Ever" /game/.export/web/index.html
+          GODOT_VERSION=4.4-stable
+          GODOT_DIR="$HOME/godot"
+          TEMPLATES_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION"
+          mkdir -p "$GODOT_DIR" "$TEMPLATES_DIR"
+          curl -sL -o "$GODOT_DIR/godot.zip" \
+            "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          unzip -q "$GODOT_DIR/godot.zip" -d "$GODOT_DIR"
+          curl -sL -o "$TEMPLATES_DIR/templates.zip" \
+            "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_export_templates.tpz"
+          unzip -q "$TEMPLATES_DIR/templates.zip" -d "$TEMPLATES_DIR"
+          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
+          mkdir -p game/.export/web
+          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \
+            --export-release "The Best Game Ever" "$GITHUB_WORKSPACE/game/.export/web/index.html"
 
       - name: Stage engine at /spiel/engine/
         if: hashFiles('game/**') != ''

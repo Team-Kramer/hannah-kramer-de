@@ -1,0 +1,103 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/screen/mission_screen/mission_screen.gd" id="1_mission"]
+[ext_resource type="Texture2D" path="res://assets/image/missions/spielplatz_01_start.png" id="2_scene"]
+
+[node name="MissionScreen" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mission")
+
+[node name="RootMarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="RootVBoxContainer" type="VBoxContainer" parent="RootMarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Der kaputte Spielplatz"
+
+[node name="IntroLabel" type="Label" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Intro"
+autowrap_mode = 3
+
+[node name="SceneTextureRect" type="TextureRect" parent="RootMarginContainer/RootVBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 140)
+texture = ExtResource("2_scene")
+expand_mode = 1
+
+[node name="CharactersHBox" type="HBoxContainer" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="OptionsFlow" type="FlowContainer" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ModesHBoxContainer" type="HBoxContainer" parent="RootMarginContainer/RootVBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ModeSelfButton" type="Button" parent="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Selbst entscheiden"
+
+[node name="ModeVoteButton" type="Button" parent="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Abstimmung"
+
+[node name="ModeModerateButton" type="Button" parent="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Moderieren"
+
+[node name="ConfirmButton" type="Button" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Entscheidung treffen"
+
+[node name="BackButton" type="Button" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Zurück"
+
+[node name="OutcomePanel" type="Panel" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="OutcomeMarginContainer" type="MarginContainer" parent="RootMarginContainer/RootVBoxContainer/OutcomePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="OutcomeLabel" type="Label" parent="RootMarginContainer/RootVBoxContainer/OutcomePanel/OutcomeMarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Outcome"
+autowrap_mode = 3
+
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeSelfButton" to="." method="_on_mode_self_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeVoteButton" to="." method="_on_mode_vote_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ConfirmButton" to="." method="_on_confirm_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/BackButton" to="." method="_on_back_button_up"]

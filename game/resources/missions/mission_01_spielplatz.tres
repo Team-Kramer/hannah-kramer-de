@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/missions/mission_data.gd" id="1_mission"]
+
+[resource]
+script = ExtResource("1_mission")
+id = "mission_spielplatz"
+title = "Der kaputte Spielplatz"
+intro_text = """Im Lichtwald gibt es einen alten Spielplatz.
+Die Schaukel hängt schief. Die Rutsche hat ein Loch.
+Und Juan kommt mit seinem Rollstuhl gar nicht richtig hin.
+
+Plötzlich findet Oma Linde einen leuchtenden Schatz –
+120 Lichttropfen!
+
+Alle haben Ideen, was damit passieren soll.
+Aber wer entscheidet eigentlich?"""
+characters = Array[Dictionary]([
+	{"id": &"juan", "name": &"Juan", "wish": &"barrierefrei", "mood": &"Hoffnungsvoll, etwas schüchtern", "dialogs": ["Einen Weg ohne Stufen… und eine Schaukel, in die ich reinrollkommen kann.", "Als ob ich unsichtbar bin. Dabei möchte ich doch einfach nur dabei sein."]},
+	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
+	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
+	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
+	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]}
+])
+resource_pool = 120
+options = Array[Dictionary]([
+	{"id": &"barrierefrei", "label": &"Barrierefreier Weg + Schaukel", "cost": 50, "effect": &"Juan kann mitspielen"},
+	{"id": &"rutsche", "label": &"Große Rutsche", "cost": 40, "effect": &"Lina ist begeistert"},
+	{"id": &"fussball", "label": &"Fußballtor", "cost": 35, "effect": &"Tobi ist happy"},
+	{"id": &"ruhebereich", "label": &"Bank + Schattenbaum", "cost": 30, "effect": &"Oma Linde freut sich"},
+	{"id": &"alles_halb", "label": &"Alles nur halb", "cost": 120, "effect": &"Niemand ist richtig zufrieden"}
+])
+decision_modes = Array[String](["self", "vote", "moderate"])
+outcomes = Array[Dictionary]([
+	{"id": &"good", "condition": &"has_barrierefrei and option_count >= 2", "result_text": "Juan rollt zum ersten Mal auf den Spielplatz.\nEr lacht. Die anderen klatschen.\nOma Linde sagt leise: „So sieht ein Ort für alle aus.“\n\nIm Lichtwald entsteht etwas Neues: der erste Licht-Rat.", "effects": {"mut_sterne": 15, "freundschaft": 20, "unlocks": &"licht_rat"}},
+	{"id": &"middle", "condition": &"only loudest idea built (rutsche or fussball)", "result_text": "Der Spielplatz ist lauter und bunter.\nJuan sitzt am Rand und schaut zu.\nEtwas in Hannah spürt: Das war nicht ganz richtig.", "effects": {"schatten_der_eile": 1}},
+	{"id": &"weak", "condition": &"alles_halb built or juan forgotten", "result_text": "Niemand ist wirklich glücklich.\nDer Spielplatz fühlt sich immer noch kaputt an – nur anders.", "effects": {"retry": true}}
+])

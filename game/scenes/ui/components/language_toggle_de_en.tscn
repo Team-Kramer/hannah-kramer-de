@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/components/language_toggle_de_en.gd" id="1_toggle"]
+
+[node name="LanguageToggleDeEn" type="HBoxContainer"]
+custom_minimum_size = Vector2(120, 32)
+script = ExtResource("1_toggle")
+theme_override_constants/separation = 4
+
+[node name="DeButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "DE"
+
+[node name="EnButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+toggle_mode = true
+text = "EN"
