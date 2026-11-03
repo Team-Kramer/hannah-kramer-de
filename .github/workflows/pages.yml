@@ -60,10 +60,13 @@ jobs:
           curl -sL -o "$TEMPLATES_DIR/templates.zip" \
             "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_export_templates.tpz"
           unzip -q "$TEMPLATES_DIR/templates.zip" -d "$TEMPLATES_DIR"
-          # Single import pass: project.godot no longer sets theme/custom_font
-          # (it loaded the woff at startup, before the import could run, which
-          # cancelled the font's own import on a fresh checkout).
-          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
+          # --verbose: the import cancels a task ("1 resources still in use at
+          # exit") because a resource (theme/font) is loaded at startup before
+          # its import runs. Verbose names the held resource so we can break
+          # the cycle. Output goes to a file; only the relevant lines are shown.
+          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import --verbose > /tmp/godot-import.log 2>&1 || true
+          echo "=== import: resources still in use / canceled ==="
+          grep -iE "still in use|in use|canceled|Do not use progress|Cannot open|Failed loading" /tmp/godot-import.log | head -60
           mkdir -p game/.export/web
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \
             --export-release "The Best Game Ever" "$GITHUB_WORKSPACE/game/.export/web/index.html"
