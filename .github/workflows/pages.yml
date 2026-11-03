@@ -81,6 +81,10 @@ jobs:
         run: |
           mkdir -p build/spiel/engine
           cp -r game/.export/web/* build/spiel/engine/
+          # index.side.wasm is ~48MB of debug symbols, loaded only by
+          # devtools in a debugging session — drop it to stay under the
+          # 25MB engine budget (release build is unaffected).
+          rm -f build/spiel/engine/index.side.wasm
           # The engine's index.html must not shadow the prerendered /spiel/ shell.
           ls -la build/spiel/engine
 
