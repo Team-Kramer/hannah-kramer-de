@@ -1,4 +1,4 @@
-@icon("res://addons/BulletUpHell/Sprites/NodeIcons24.png")
+@icon("res://addons/BulletUpHell/Sprites/NodeIcons22.png")
 extends Resource
 class_name animState
 

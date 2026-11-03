@@ -52,21 +52,26 @@ jobs:
         run: |
           GODOT_VERSION=4.4-stable
           GODOT_DIR="$HOME/godot"
-          TEMPLATES_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION"
+          # Godot stores templates under the dotted version (4.4.stable), not
+          # the release tag (4.4-stable).
+          TEMPLATES_DIR="$HOME/.local/share/godot/export_templates/4.4.stable"
           mkdir -p "$GODOT_DIR" "$TEMPLATES_DIR"
           curl -sL -o "$GODOT_DIR/godot.zip" \
             "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
           unzip -q "$GODOT_DIR/godot.zip" -d "$GODOT_DIR"
-          curl -sL -o "$TEMPLATES_DIR/templates.zip" \
+          curl -sL -o "$HOME/templates.tpz" \
             "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_export_templates.tpz"
-          unzip -q "$TEMPLATES_DIR/templates.zip" -d "$TEMPLATES_DIR"
-          # --verbose: the import cancels a task ("1 resources still in use at
-          # exit") because a resource (theme/font) is loaded at startup before
-          # its import runs. Verbose names the held resource so we can break
-          # the cycle. Output goes to a file; only the relevant lines are shown.
-          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import --verbose > /tmp/godot-import.log 2>&1 || true
-          echo "=== import: resources still in use / canceled ==="
-          grep -iE "still in use|in use|canceled|Do not use progress|Cannot open|Failed loading" /tmp/godot-import.log | head -60
+          # The .tpz contains a "templates/" subfolder; Godot expects the
+          # template zips directly in TEMPLATES_DIR, so extract to a temp dir
+          # and move the contents up one level.
+          mkdir -p "$HOME/tpz-extract"
+          unzip -q "$HOME/templates.tpz" -d "$HOME/tpz-extract"
+          mv "$HOME/tpz-extract/templates/"* "$TEMPLATES_DIR/"
+          rm -rf "$HOME/tpz-extract" "$HOME/templates.tpz"
+          # Single import pass: project.godot no longer sets theme/custom_font
+          # (it loaded the woff at startup, before the import could run, which
+          # cancelled the font's own import on a fresh checkout).
+          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
           mkdir -p game/.export/web
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \
             --export-release "The Best Game Ever" "$GITHUB_WORKSPACE/game/.export/web/index.html"
