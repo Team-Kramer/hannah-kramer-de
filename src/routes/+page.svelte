@@ -8,10 +8,49 @@
 	import Reveal from '$lib/ui/effects/Reveal.svelte';
 	import TiltCard from '$lib/ui/effects/TiltCard.svelte';
 	import GrowBar from '$lib/ui/effects/GrowBar.svelte';
+	import { readEngineState, NO_ENGINE_STATE, type EngineSave } from '$lib/persist/read-engine-state';
+	import { encodeShareLink } from '$lib/share/encode';
 
 	const t = de;
 	const latestPosts = getAllPosts().slice(0, 3);
 	const playableCount = MISSIONS.filter((m) => m.playable).length;
+
+	// Engine save state (client-only: IndexedDB is unavailable during SSR).
+	let engineState: EngineSave = $state(NO_ENGINE_STATE);
+	let shareCopied = $state(false);
+
+	// Total light points across the world's resources (for the continue banner).
+	function totalLight(state: EngineSave): number | null {
+		if (!state.resources) return null;
+		const sum = Object.values(state.resources).reduce((a, b) => a + (Number(b) || 0), 0);
+		return Number.isFinite(sum) ? sum : null;
+	}
+
+	function formatLastPlayed(state: EngineSave): string {
+		if (!state.lastPlayed) return '';
+		return new Date(state.lastPlayed).toLocaleDateString('de-DE', {
+			day: '2-digit',
+			month: 'long',
+			year: 'numeric'
+		});
+	}
+
+	async function copyShareLink() {
+		if (!engineState.rawJson) return;
+		const link = encodeShareLink({ snapshotJson: engineState.rawJson });
+		try {
+			await navigator.clipboard.writeText(link);
+			shareCopied = true;
+			setTimeout(() => (shareCopied = false), 2000);
+		} catch {
+			// Clipboard blocked (e.g. non-secure context) — fall back to a prompt.
+			window.prompt(t.continue.share, link);
+		}
+	}
+
+	onMount(async () => {
+		engineState = await readEngineState();
+	});
 	const featureImages = {
 		zuhoren: 'IMG-019',
 		entscheiden: 'IMG-020',
@@ -88,6 +127,41 @@
 						{t.hero.ctaProfile}
 					</a>
 				</div>
+				{#if engineState.hasSave}
+					<!-- Continue banner: resumes the most recently played engine save. -->
+					<div class="mt-8 flex flex-wrap items-center gap-4 rounded-panel border border-accent/40 bg-on-night/10 p-4">
+						<div class="min-w-0 flex-1">
+							<p class="text-sm font-bold text-accent">{t.continue.label}</p>
+							<p class="truncate text-sm text-on-night/80">
+								{t.continue.subtitle}
+								{#if engineState.saveFileName}
+									— {engineState.saveFileName}
+								{/if}
+								{#if formatLastPlayed(engineState)}
+									· {formatLastPlayed(engineState)}
+								{/if}
+								{#if totalLight(engineState) !== null}
+									· {totalLight(engineState)} {t.worldStatus.light}
+								{/if}
+							</p>
+						</div>
+						<a
+							href="/spiel/?load=last"
+							class="touch-target glow-gold inline-flex items-center rounded-pill bg-accent px-6 py-3 font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
+						>
+							{t.continue.cta} →
+						</a>
+						{#if engineState.rawJson}
+							<button
+								type="button"
+								onclick={copyShareLink}
+								class="touch-target inline-flex items-center rounded-pill border border-on-night/30 px-5 py-3 font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
+							>
+								{shareCopied ? t.continue.shareCopied : t.continue.share}
+							</button>
+						{/if}
+					</div>
+				{/if}
 			</div>
 			<div>
 				<!-- TODO-IMG: IMG-018 | hero.webp | 16:9 1600×900 | batch D

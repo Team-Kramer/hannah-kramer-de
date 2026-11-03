@@ -17,6 +17,25 @@ export const de = {
 		ctaPlay: 'Spiel jetzt',
 		ctaProfile: 'Wer ist Hannah?'
 	},
+	continue: {
+		label: 'Weiter spielen',
+		subtitle: 'Dein Lichtwald wartet',
+		cta: 'Weiterspielen',
+		share: 'Welt teilen',
+		shareCopied: 'Link kopiert!'
+	},
+	worldStatus: {
+		title: 'Wald-Status',
+		subtitle: 'So steht es um deinen Lichtwald',
+		lastPlayed: 'Zuletzt gespielt',
+		saveName: 'Wald',
+		version: 'Version',
+		versionOk: 'passt zum Spiel',
+		versionMismatch: 'andere Version',
+		light: 'Lichtpunkte',
+		tabs: 'Entdeckte Orte',
+		noSave: 'Noch kein Spielstand gefunden. Spiel eine Mission, um deinen Lichtwald zu beginnen.'
+	},
 	profile: {
 		title: 'Wer ist Hannah?',
 		bio: 'Hannah Kramer ist 10 Jahre alt und baut Spiele, in denen Kinder lernen, wie wichtig es ist, einander zuzuhören und gemeinsam zu entscheiden. Der Lichtwald ist ihr Projekt: eine magische Welt, in der jede Stimme zählt — auch die leisen. Hannah entwickelt den Lichtwald mit ihrer Familie und teilt alles, was sie lernt, auf dieser Seite.',
