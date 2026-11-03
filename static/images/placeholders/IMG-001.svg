@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Hannah — Platzhalter">
+	<defs>
+		<linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#1E1B4B"/>
+			<stop offset="1" stop-color="#274438"/>
+		</linearGradient>
+		<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#F5B942" stop-opacity="0.5"/>
+			<stop offset="1" stop-color="#F5B942" stop-opacity="0"/>
+		</radialGradient>
+	</defs>
+	<rect width="512" height="512" fill="url(#night)"/>
+	<circle cx="148.5" cy="363.5" r="3.8" fill="#F5B942" opacity="0.25"/>
+<circle cx="41.0" cy="390.4" r="3.5" fill="#F5B942" opacity="0.37"/>
+<circle cx="158.7" cy="233.0" r="1.8" fill="#F5B942" opacity="0.49"/>
+<circle cx="199.7" cy="94.7" r="3.8" fill="#F5B942" opacity="0.61"/>
+<circle cx="61.4" cy="129.3" r="2.0" fill="#F5B942" opacity="0.25"/>
+<circle cx="102.4" cy="375.0" r="1.5" fill="#F5B942" opacity="0.37"/>
+<circle cx="66.6" cy="256.0" r="2.3" fill="#F5B942" opacity="0.49"/>
+	
+	<circle cx="256" cy="215.04" r="180.22400000000002" fill="url(#glow)" opacity="0.55"/>
+	<g stroke="#F5B942" stroke-width="6.5536" fill="none" opacity="0.9">
+		<rect x="210.944" y="178.176" width="90.11200000000001" height="90.11200000000001" rx="18.0224" fill="rgba(245,185,66,0.18)"/>
+		<line x1="256" y1="178.176" x2="256" y2="153.6"/>
+		<circle cx="256" cy="145.408" r="11.468800000000002"/>
+	</g>
+	<circle cx="256" cy="223.232" r="24.576" fill="#F5B942" opacity="0.9"/>
+	<g font-family="Nunito, sans-serif" text-anchor="middle" fill="#FFF9EF">
+		<text x="256" y="399.36" font-size="28.16" font-weight="700" opacity="0.92">Hannah</text>
+		<text x="256" y="435.20000000000005" font-size="17.408" opacity="0.55">IMG-001 · 1:1 · 512×512 · batch A — TODO-IMG placeholder</text>
+	</g>
+</svg>

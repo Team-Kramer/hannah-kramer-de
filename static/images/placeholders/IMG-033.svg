@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="OG Image — Platzhalter">
+	<defs>
+		<linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#1E1B4B"/>
+			<stop offset="1" stop-color="#274438"/>
+		</linearGradient>
+		<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#F5B942" stop-opacity="0.5"/>
+			<stop offset="1" stop-color="#F5B942" stop-opacity="0"/>
+		</radialGradient>
+	</defs>
+	<rect width="1200" height="630" fill="url(#night)"/>
+	<circle cx="900.0" cy="59.8" r="2.8" fill="#F5B942" opacity="0.25"/>
+<circle cx="624.0" cy="253.6" r="2.0" fill="#F5B942" opacity="0.37"/>
+<circle cx="960.0" cy="367.0" r="1.5" fill="#F5B942" opacity="0.49"/>
+<circle cx="600.0" cy="414.2" r="1.5" fill="#F5B942" opacity="0.61"/>
+<circle cx="48.0" cy="329.2" r="2.5" fill="#F5B942" opacity="0.25"/>
+<circle cx="264.0" cy="300.8" r="2.0" fill="#F5B942" opacity="0.37"/>
+<circle cx="1104.0" cy="348.1" r="2.0" fill="#F5B942" opacity="0.49"/>
+	
+	<circle cx="600" cy="264.59999999999997" r="221.76000000000002" fill="url(#glow)" opacity="0.55"/>
+	<g stroke="#F5B942" stroke-width="8.064" fill="none" opacity="0.9">
+		<rect x="544.56" y="219.23999999999995" width="110.88000000000001" height="110.88000000000001" rx="22.176" fill="rgba(245,185,66,0.18)"/>
+		<line x1="600" y1="219.23999999999995" x2="600" y2="188.99999999999997"/>
+		<circle cx="600" cy="178.91999999999996" r="14.112"/>
+	</g>
+	<circle cx="600" cy="274.67999999999995" r="30.24" fill="#F5B942" opacity="0.9"/>
+	<g font-family="Nunito, sans-serif" text-anchor="middle" fill="#FFF9EF">
+		<text x="600" y="491.40000000000003" font-size="34.65" font-weight="700" opacity="0.92">OG Image</text>
+		<text x="600" y="535.5" font-size="21.42" opacity="0.55">IMG-033 · 1200×630 · 1200×630 · batch F — TODO-IMG placeholder</text>
+	</g>
+</svg>

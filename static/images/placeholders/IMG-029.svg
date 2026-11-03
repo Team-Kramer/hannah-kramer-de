@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480" role="img" aria-label="Mission 06 — Platzhalter">
+	<defs>
+		<linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#1E1B4B"/>
+			<stop offset="1" stop-color="#274438"/>
+		</linearGradient>
+		<radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#F5B942" stop-opacity="0.5"/>
+			<stop offset="1" stop-color="#F5B942" stop-opacity="0"/>
+		</radialGradient>
+	</defs>
+	<rect width="640" height="480" fill="url(#night)"/>
+	<circle cx="320.0" cy="315.6" r="1.5" fill="#F5B942" opacity="0.25"/>
+<circle cx="192.0" cy="99.6" r="1.5" fill="#F5B942" opacity="0.37"/>
+<circle cx="384.0" cy="63.6" r="1.5" fill="#F5B942" opacity="0.49"/>
+<circle cx="12.8" cy="373.2" r="2.0" fill="#F5B942" opacity="0.61"/>
+<circle cx="448.0" cy="171.6" r="1.5" fill="#F5B942" opacity="0.25"/>
+<circle cx="409.6" cy="178.8" r="2.5" fill="#F5B942" opacity="0.37"/>
+<circle cx="473.6" cy="286.8" r="2.5" fill="#F5B942" opacity="0.49"/>
+	
+	<circle cx="320" cy="201.6" r="168.96" fill="url(#glow)" opacity="0.55"/>
+	<g stroke="#F5B942" stroke-width="6.144" fill="none" opacity="0.9">
+		<rect x="277.76" y="167.04" width="84.48" height="84.48" rx="16.896" fill="rgba(245,185,66,0.18)"/>
+		<line x1="320" y1="167.04" x2="320" y2="144"/>
+		<circle cx="320" cy="136.32" r="10.752"/>
+	</g>
+	<circle cx="320" cy="209.28" r="23.04" fill="#F5B942" opacity="0.9"/>
+	<g font-family="Nunito, sans-serif" text-anchor="middle" fill="#FFF9EF">
+		<text x="320" y="374.40000000000003" font-size="26.4" font-weight="700" opacity="0.92">Mission 06</text>
+		<text x="320" y="408.00000000000006" font-size="16.32" opacity="0.55">IMG-029 · 4:3 · 640×480 · batch E — TODO-IMG placeholder</text>
+	</g>
+</svg>
