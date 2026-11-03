@@ -60,11 +60,9 @@ jobs:
           curl -sL -o "$TEMPLATES_DIR/templates.zip" \
             "https://github.com/godotengine/godot/releases/download/$GODOT_VERSION/Godot_v${GODOT_VERSION}_export_templates.tpz"
           unzip -q "$TEMPLATES_DIR/templates.zip" -d "$TEMPLATES_DIR"
-          # Run the import twice: on a fresh checkout the first pass only
-          # scans and leaves some resources (e.g. the woff font) unimported
-          # ("1 resources still in use at exit"); the second pass completes
-          # them.
-          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
+          # Single import pass: project.godot no longer sets theme/custom_font
+          # (it loaded the woff at startup, before the import could run, which
+          # cancelled the font's own import on a fresh checkout).
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
           mkdir -p game/.export/web
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \

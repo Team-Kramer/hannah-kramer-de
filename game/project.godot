@@ -74,7 +74,11 @@ folder_colors={
 
 [gui]
 
-theme/custom_font="res://assets/font/noto_sans/woff/noto_sans.woff"
+# No theme/custom_font here: it loads the font at project startup, before a
+# headless CI import has generated the .fontdata, which cancels the font's own
+# import ("1 resources still in use at exit") and breaks the Web export.
+# The runtime themes (resources/theme/dark|debug) set default_font to the
+# same woff, so the custom font is redundant.
 theme/default_font_generate_mipmaps=true
 
 [input]
