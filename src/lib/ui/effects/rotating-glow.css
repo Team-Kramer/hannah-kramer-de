@@ -1,0 +1,55 @@
+/* Ania #4 — Rotating glow ("Lantern" motif: current-mission card, CTA ring).
+   @property --angle + conic-gradient, gold → cream (never neon).
+   Static glow fallback where @property is unsupported. */
+@property --angle {
+	syntax: '<angle>';
+	initial-value: 0deg;
+	inherits: false;
+}
+
+/* z-index: 0 creates a stacking context so the ::before ring (z-index: -1)
+   paints behind the card but above the section background. */
+.rotating-glow {
+	position: relative;
+	z-index: 0;
+}
+
+.rotating-glow::before {
+	content: '';
+	position: absolute;
+	inset: -3px;
+	z-index: -1;
+	border-radius: inherit;
+	background: conic-gradient(
+		from var(--angle),
+		var(--color-glow-gold),
+		var(--color-surface),
+		var(--color-glow-gold),
+		var(--color-surface),
+		var(--color-glow-gold)
+	);
+	animation: rotating-glow-spin 6s linear infinite;
+}
+
+@keyframes rotating-glow-spin {
+	to {
+		--angle: 360deg;
+	}
+}
+
+/* Static glow fallback: browsers without @property (e.g. Firefox < 128)
+   keep a soft static ring instead of a broken/missing animation. */
+@supports not (background: conic-gradient(from 45deg, black, white)) {
+	.rotating-glow::before {
+		display: none;
+	}
+	.rotating-glow {
+		box-shadow: 0 0 24px var(--color-glow-gold);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.rotating-glow::before {
+		animation: none;
+	}
+}

@@ -1,0 +1,27 @@
+/* Ania #6 — Super-glow icon button (primary CTAs: "Spiel jetzt", "Weiter").
+   Gold glow on hover (not neon), translateY(-4px) hover, scale(0.96) active.
+   Hover only on fine-pointer devices (no hover-dependent state on touch). */
+.glow-button {
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.glow-button:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 0 24px var(--color-glow-gold);
+	}
+}
+
+.glow-button:active {
+	transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.glow-button,
+	.glow-button:hover {
+		transition: none;
+		transform: none;
+	}
+}

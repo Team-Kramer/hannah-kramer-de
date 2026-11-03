@@ -47,7 +47,7 @@
 						</p>
 						{#if mission.playable}
 							<a
-								href="/spiel/{mission.id}"
+								href="/spiel/{mission.id}/"
 								class="touch-target glow-gold mt-6 inline-flex items-center rounded-pill bg-accent px-8 py-4 text-lg font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
 							>
 								▶ {t.missions.play01}

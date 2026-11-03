@@ -1,0 +1,33 @@
+/* Ania #14 — Pulsing button (single primary CTA per page).
+   Soft gold pulse ring, 300ms, ≤ 8px spread (child-safety: no flashing). */
+.pulse-ring {
+	position: relative;
+}
+
+.pulse-ring::after {
+	content: '';
+	position: absolute;
+	inset: -4px;
+	border-radius: inherit;
+	border: 2px solid var(--color-glow-gold);
+	animation: pulse-ring-soft 2.4s ease-out infinite;
+}
+
+@keyframes pulse-ring-soft {
+	0% {
+		opacity: 0.7;
+		transform: scale(1);
+	}
+	70%,
+	100% {
+		opacity: 0;
+		transform: scale(1.03);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pulse-ring::after {
+		animation: none;
+		opacity: 0;
+	}
+}

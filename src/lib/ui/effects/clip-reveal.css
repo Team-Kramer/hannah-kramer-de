@@ -1,0 +1,25 @@
+/* Ania #10 — Clip-path reveal (picture-book page turn, 200ms cross-fade duration).
+   Applied by the Reveal component when the element enters the viewport.
+   Instant-visible fallback: without JS (or reduced motion) the element is
+   simply never given the .reveal-hidden class. */
+.reveal-hidden {
+	clip-path: inset(0 0 100% 0);
+	opacity: 0;
+}
+
+.reveal-shown {
+	clip-path: inset(0 0 0 0);
+	opacity: 1;
+	transition:
+		clip-path 200ms ease,
+		opacity 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.reveal-hidden,
+	.reveal-shown {
+		clip-path: none;
+		opacity: 1;
+		transition: none;
+	}
+}

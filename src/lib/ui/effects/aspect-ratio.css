@@ -1,0 +1,47 @@
+/* Ania #18 — Aspect-ratio layout (scene cards 16/9, mission cards 4/3,
+   character avatars 1/1) + Ania #19 button hover animation (non-touch only). */
+.aspect-scene {
+	aspect-ratio: 16 / 9;
+}
+
+.aspect-mission {
+	aspect-ratio: 4 / 3;
+}
+
+.aspect-avatar {
+	aspect-ratio: 1 / 1;
+}
+
+.aspect-scene img,
+.aspect-mission img,
+.aspect-avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Ania #19 — Button hover: translateY(-3px) + soft glow, fine-pointer only. */
+.btn-lift {
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.btn-lift:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--color-glow-gold) 60%, transparent);
+	}
+}
+
+.btn-lift:active {
+	transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.btn-lift,
+	.btn-lift:hover {
+		transition: none;
+		transform: none;
+	}
+}

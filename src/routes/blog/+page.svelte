@@ -27,7 +27,7 @@
 		<div class="mt-10 space-y-6">
 			{#each posts as post (post.slug)}
 				<a
-					href="/blog/{post.slug}"
+					href="/blog/{post.slug}/"
 					class="block rounded-panel border border-border bg-surface-elevated p-6 shadow-soft transition-shadow duration-200 hover:shadow-md"
 				>
 					<p class="text-sm font-semibold text-text-secondary">

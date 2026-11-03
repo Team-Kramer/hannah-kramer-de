@@ -1,0 +1,13 @@
+/* Ania #9 — Blend-mode overlay (subtle soft-light texture on night gradients).
+   Must not reduce text contrast: the overlay sits behind content (z-index)
+   and uses low-opacity gold on indigo only. */
+.blend-texture {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(ellipse 60% 50% at 20% 30%, rgba(245, 185, 66, 0.14), transparent 70%),
+		radial-gradient(ellipse 50% 40% at 80% 70%, rgba(245, 185, 66, 0.1), transparent 70%);
+	-webkit-mix-blend-mode: soft-light;
+	mix-blend-mode: soft-light;
+}

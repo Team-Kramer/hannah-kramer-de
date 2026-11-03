@@ -5,9 +5,13 @@
 	import { de } from '$lib/i18n/de';
 	import { MISSIONS } from '$lib/missions';
 	import { getAllPosts } from '$lib/blog';
+	import Reveal from '$lib/ui/effects/Reveal.svelte';
+	import TiltCard from '$lib/ui/effects/TiltCard.svelte';
+	import GrowBar from '$lib/ui/effects/GrowBar.svelte';
 
 	const t = de;
 	const latestPosts = getAllPosts().slice(0, 3);
+	const playableCount = MISSIONS.filter((m) => m.playable).length;
 	const featureImages = {
 		zuhoren: 'IMG-019',
 		entscheiden: 'IMG-020',
@@ -57,8 +61,11 @@
 <main>
 	<!-- 1. HERO -->
 	<section class="relative overflow-hidden bg-bg py-20 md:py-28">
-		<!-- soft glowing light-blobs (Ania #3 metaball, reduced-motion safe) -->
-		<div class="fireflies" aria-hidden="true"></div>
+		<!-- soft glowing light-blobs (Ania #3 metaball, reduced-motion safe) +
+		     Ania #15 scroll parallax (≤20px, feature-detected, no-op elsewhere) -->
+		<div class="fireflies hero-parallax" aria-hidden="true"></div>
+		<!-- Ania #9 blend-mode overlay (subtle soft-light texture) -->
+		<div class="blend-texture" aria-hidden="true"></div>
 		<div class="relative mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
 			<div>
 				<h1 class="text-5xl font-extrabold leading-tight text-on-night md:text-6xl">
@@ -67,15 +74,16 @@
 				<p class="mt-4 text-xl text-on-night/80">{t.hero.subline}</p>
 				<p class="typewriter mt-6 text-lg font-bold text-accent" data-text={t.hero.tagline} aria-label={t.hero.tagline}></p>
 				<div class="mt-10 flex flex-wrap gap-4">
+					<!-- Ania #6 glow button + #14 pulse ring (single primary CTA per page) -->
 					<a
-						href="/spiel/mission-01"
-						class="touch-target glow-gold inline-flex items-center rounded-pill bg-accent px-8 py-4 text-lg font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
+						href="/spiel/mission-01/"
+						class="touch-target glow-gold glow-button pulse-ring inline-flex items-center rounded-pill bg-accent px-8 py-4 text-lg font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
 					>
 						{t.hero.ctaPlay} →
 					</a>
 					<a
 						href="#profile"
-						class="touch-target inline-flex items-center rounded-pill border border-on-night/30 px-8 py-4 text-lg font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
+						class="touch-target btn-lift inline-flex items-center rounded-pill border border-on-night/30 px-8 py-4 text-lg font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
 					>
 						{t.hero.ctaProfile}
 					</a>
@@ -129,13 +137,13 @@
 						{t.profile.links.github}
 					</a>
 					<a
-						href="/blog"
+						href="/blog/"
 						class="touch-target inline-flex items-center rounded-pill border border-border bg-surface-elevated px-6 py-3 font-bold text-text transition-colors duration-200 hover:bg-accent-light"
 					>
 						{t.profile.links.blog}
 					</a>
 					<a
-						href="/so-funktionierts"
+						href="/so-funktionierts/"
 						class="touch-target inline-flex items-center rounded-pill border border-border bg-surface-elevated px-6 py-3 font-bold text-text transition-colors duration-200 hover:bg-accent-light"
 					>
 						{t.profile.links.soFunktionierts}
@@ -152,20 +160,22 @@
 			<p class="mt-3 max-w-2xl text-lg text-text-secondary">{t.blog.subtitle}</p>
 			<div class="mt-10 grid gap-6 md:grid-cols-3">
 				{#each latestPosts as post (post.slug)}
-					<a
-						href="/blog/{post.slug}"
-						class="block rounded-panel border border-border bg-surface p-6 shadow-soft transition-shadow duration-200 hover:shadow-md"
-					>
-						<p class="text-sm font-semibold text-text-secondary">
-							{new Date(post.date).toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
-						</p>
-						<h3 class="mt-2 text-xl font-bold text-text">{post.title}</h3>
-						<p class="mt-2 text-text-secondary">{post.description}</p>
-					</a>
+					<Reveal>
+						<a
+							href="/blog/{post.slug}/"
+							class="block h-full rounded-panel border border-border bg-surface p-6 shadow-soft transition-shadow duration-200 hover:shadow-md"
+						>
+							<p class="text-sm font-semibold text-text-secondary">
+								{new Date(post.date).toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
+							</p>
+							<h3 class="mt-2 text-xl font-bold text-text">{post.title}</h3>
+							<p class="mt-2 text-text-secondary">{post.description}</p>
+						</a>
+					</Reveal>
 				{/each}
 			</div>
 			<a
-				href="/blog"
+				href="/blog/"
 				class="touch-target mt-8 inline-flex items-center rounded-pill border border-border px-6 py-3 font-bold text-text transition-colors duration-200 hover:bg-accent-light"
 			>
 				{t.blog.allPosts} →
@@ -220,11 +230,15 @@
 			<div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				{#each MISSIONS as mission (mission.id)}
 					{@const locked = !mission.playable}
-					<a
-						href={locked ? '/missionen' : '/spiel/' + mission.id}
-						class="group block overflow-hidden rounded-panel bg-on-night/5 transition-shadow duration-200 hover:shadow-md"
-						aria-label={locked ? mission.title + ' — ' + t.missions.locked : t.missions.play01 + ': ' + mission.title}
-					>
+					<!-- Ania #11 tilt (max 4°, fine-pointer only) + #10 clip-path reveal +
+					     #4 rotating glow marks the current (playable) mission -->
+					<TiltCard class="h-full">
+						<Reveal class="h-full {locked ? '' : 'rotating-glow'}">
+							<a
+								href={locked ? '/missionen' : '/spiel/' + mission.id}
+								class="group block h-full overflow-hidden rounded-panel bg-on-night/5 transition-shadow duration-200 hover:shadow-md"
+								aria-label={locked ? mission.title + ' — ' + t.missions.locked : t.missions.play01 + ': ' + mission.title}
+							>
 						<!-- TODO-IMG: {mission.imageId} | mission-{String(mission.number).padStart(2, '0')}.webp | 4:3 800×600 | batch E
 						     What to show: see content/images.json for slot {mission.imageId}.
 						-->
@@ -236,20 +250,22 @@
 							height="480"
 							loading="lazy"
 						/>
-						<div class="p-5">
-							<p class="text-sm font-bold text-accent">Mission {String(mission.number).padStart(2, '0')}</p>
-							<h3 class="mt-1 text-xl font-bold text-on-night">{mission.title}</h3>
-							<p class="mt-1 text-sm text-on-night/70">{mission.theme}</p>
-							<p class="mt-3 text-sm font-bold {locked ? 'text-on-night/50' : 'text-accent'}">
-								{locked ? '🔒 ' + t.missions.locked : '▶ ' + t.missions.play01}
-							</p>
-						</div>
-					</a>
+							<div class="p-5">
+								<p class="text-sm font-bold text-accent">Mission {String(mission.number).padStart(2, '0')}</p>
+								<h3 class="mt-1 text-xl font-bold text-on-night">{mission.title}</h3>
+								<p class="mt-1 text-sm text-on-night/70">{mission.theme}</p>
+								<p class="mt-3 text-sm font-bold {locked ? 'text-on-night/50' : 'text-accent'}">
+									{locked ? '🔒 ' + t.missions.locked : '▶ ' + t.missions.play01}
+								</p>
+							</div>
+						</a>
+						</Reveal>
+					</TiltCard>
 				{/each}
 			</div>
 			<div class="mt-8">
 				<a
-					href="/missionen"
+					href="/missionen/"
 					class="touch-target inline-flex items-center rounded-pill border border-on-night/30 px-6 py-3 font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
 				>
 					{t.missions.allMissions} →
@@ -265,6 +281,13 @@
 				<p class="text-xl font-extrabold text-on-night">{stat}</p>
 			{/each}
 		</div>
+		<!-- Ania #13 grow bar: world progress (1 of 7 missions playable) -->
+		<div class="mx-auto mt-8 max-w-md px-6">
+			<p class="mb-2 text-center text-sm font-bold text-on-night/80">
+				Wald-Fortschritt: {playableCount} von {MISSIONS.length} Missionen
+			</p>
+			<GrowBar percent={(playableCount / MISSIONS.length) * 100} label="Wald-Fortschritt" />
+		</div>
 	</section>
 
 	<!-- 7. FINAL CTA + SAAS STRIP -->
@@ -273,8 +296,8 @@
 			<h2 class="text-4xl font-extrabold text-on-night md:text-5xl">{t.cta.title}</h2>
 			<p class="mt-4 text-xl text-on-night/80">{t.cta.subtitle}</p>
 			<a
-				href="/spiel/mission-01"
-				class="touch-target glow-gold mt-10 inline-flex items-center rounded-pill bg-accent px-10 py-5 text-xl font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
+				href="/spiel/mission-01/"
+				class="touch-target glow-gold glow-button mt-10 inline-flex items-center rounded-pill bg-accent px-10 py-5 text-xl font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
 			>
 				{t.cta.play} →
 			</a>
@@ -287,7 +310,7 @@
 					href="https://github.com/Team-Kramer"
 					target="_blank"
 					rel="noopener noreferrer"
-					class="touch-target mt-6 inline-flex items-center rounded-pill border border-on-night/30 px-6 py-3 font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
+					class="touch-target btn-lift mt-6 inline-flex items-center rounded-pill border border-on-night/30 px-6 py-3 font-bold text-on-night transition-colors duration-200 hover:bg-on-night/10"
 				>
 					{t.cta.saasLink} →
 				</a>

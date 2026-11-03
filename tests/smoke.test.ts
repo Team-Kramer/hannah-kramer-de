@@ -10,7 +10,7 @@ describe('landing page smoke', () => {
 			.getAllByRole('link', { name: /Spiel jetzt/i })
 			.find((el) => el.className.includes('glow-gold'));
 		expect(heroCta).toBeDefined();
-		expect(heroCta).toHaveAttribute('href', '/spiel/mission-01');
+		expect(heroCta).toHaveAttribute('href', '/spiel/mission-01/');
 	});
 
 	it('hero CTA has a ≥56px touch target', () => {

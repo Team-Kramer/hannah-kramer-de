@@ -1,7 +1,8 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	let { post }: PageData = $props();
+	let { data }: PageProps = $props();
+	const post = $derived(data.post);
 
 	function formatDate(iso: string): string {
 		return new Date(iso).toLocaleDateString('de-DE', {
@@ -23,7 +24,7 @@
 
 <article class="min-h-screen bg-surface py-16">
 	<div class="mx-auto max-w-2xl px-6">
-		<a href="/blog" class="inline-flex min-h-14 items-center gap-2 rounded-pill px-4 text-lg font-bold text-text-secondary hover:text-text">
+		<a href="/blog/" class="inline-flex min-h-14 items-center gap-2 rounded-pill px-4 text-lg font-bold text-text-secondary hover:text-text">
 			← Alle Beiträge
 		</a>
 
@@ -40,7 +41,7 @@
 
 		<footer class="mt-12 border-t border-border pt-8">
 			<a
-				href="/spiel/mission-01"
+				href="/spiel/mission-01/"
 				class="touch-target inline-block rounded-pill bg-accent px-8 py-4 text-lg font-bold text-on-gold"
 			>
 				Jetzt Mission 01 spielen

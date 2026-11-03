@@ -1,6 +1,15 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import GlidingPill from '$lib/ui/effects/GlidingPill.svelte';
+
+	// Ania #16 — gliding pill as decision-mode switcher (highlights the table row)
+	let activeMode = 'selbst';
+	const modes: [string, string][] = [
+		['Selbst entscheiden', 'selbst'],
+		['Abstimmen lassen', 'abstimmung'],
+		['Moderieren', 'moderation']
+	];
 </script>
 
 <svelte:head>
@@ -48,7 +57,10 @@
 				In jeder Mission gibt es drei Wege, zu einer Entscheidung zu kommen.
 				Kein Weg ist „besser“ — jeder hat andere Stärken und andere Folgen.
 			</p>
-			<div class="mt-6 overflow-x-auto">
+			<div class="mt-6">
+				<GlidingPill tabs={modes} bind:value={activeMode} />
+			</div>
+			<div class="mt-4 overflow-x-auto">
 				<table class="w-full border-collapse text-left">
 					<thead>
 						<tr>
@@ -58,21 +70,21 @@
 						</tr>
 					</thead>
 					<tbody class="text-text-secondary">
-						<tr>
-							<td class="border border-border p-3 font-bold text-text">Selbst entscheiden</td>
-							<td class="border border-border p-3">Hannah trifft die Entscheidung allein. Ihre Freundschaften wiegen mit.</td>
-							<td class="border border-border p-3">Verantwortung tragen</td>
-						</tr>
-						<tr>
-							<td class="border border-border p-3 font-bold text-text">Abstimmen lassen</td>
-							<td class="border border-border p-3">Jede Stimme zählt. Freundschaften geben ein Gewicht. Bei Gleichstand gewinnt die leiseste Stimme.</td>
-							<td class="border border-border p-3">Demokratie & Kompromisse</td>
-						</tr>
-						<tr>
-							<td class="border border-border p-3 font-bold text-text">Moderieren</td>
-							<td class="border border-border p-3">Hannah hilft allen, einen gemeinsamen Kompromiss zu finden, mit dem alle leben können.</td>
-							<td class="border border-border p-3">Vermitteln & Zuhören</td>
-						</tr>
+						{#each modes as [label, id] (id)}
+							<tr class={activeMode === id ? 'bg-accent-light' : ''}>
+								<td class="border border-border p-3 font-bold text-text">{label}</td>
+								{#if id === 'selbst'}
+									<td class="border border-border p-3">Hannah trifft die Entscheidung allein. Ihre Freundschaften wiegen mit.</td>
+									<td class="border border-border p-3">Verantwortung tragen</td>
+								{:else if id === 'abstimmung'}
+									<td class="border border-border p-3">Jede Stimme zählt. Freundschaften geben ein Gewicht. Bei Gleichstand gewinnt die leiseste Stimme.</td>
+									<td class="border border-border p-3">Demokratie & Kompromisse</td>
+								{:else}
+									<td class="border border-border p-3">Hannah hilft allen, einen gemeinsamen Kompromiss zu finden, mit dem alle leben können.</td>
+									<td class="border border-border p-3">Vermitteln & Zuhören</td>
+								{/if}
+							</tr>
+						{/each}
 					</tbody>
 				</table>
 			</div>
@@ -115,7 +127,7 @@
 
 		<div class="mt-14 flex flex-wrap gap-4">
 			<a
-				href="/spiel/mission-01"
+				href="/spiel/mission-01/"
 				class="touch-target glow-gold inline-flex items-center rounded-pill bg-accent px-8 py-4 text-lg font-bold text-on-gold transition-colors duration-200 hover:bg-accent-hover"
 			>
 				Selbst ausprobieren →

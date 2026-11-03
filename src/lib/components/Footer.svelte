@@ -34,10 +34,10 @@
 			<p class="font-bold text-on-night">{t.footer.legal}</p>
 			<ul class="mt-3 space-y-2">
 				<li>
-					<a href="/impressum" class="text-on-night/70 transition-colors duration-150 hover:text-on-night">{t.footer.impressum}</a>
+					<a href="/impressum/" class="text-on-night/70 transition-colors duration-150 hover:text-on-night">{t.footer.impressum}</a>
 				</li>
 				<li>
-					<a href="/datenschutz" class="text-on-night/70 transition-colors duration-150 hover:text-on-night">{t.footer.datenschutz}</a>
+					<a href="/datenschutz/" class="text-on-night/70 transition-colors duration-150 hover:text-on-night">{t.footer.datenschutz}</a>
 				</li>
 			</ul>
 		</div>

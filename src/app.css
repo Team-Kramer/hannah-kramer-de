@@ -4,6 +4,16 @@
 @import '@fontsource/nunito/800.css';
 @import '@fontsource/material-symbols-outlined/400.css';
 @import 'tailwindcss';
+@import './lib/ui/effects/frosted-nav.css';
+@import './lib/ui/effects/rotating-glow.css';
+@import './lib/ui/effects/glow-button.css';
+@import './lib/ui/effects/clip-reveal.css';
+@import './lib/ui/effects/grow.css';
+@import './lib/ui/effects/pulse-ring.css';
+@import './lib/ui/effects/gliding-pill.css';
+@import './lib/ui/effects/aspect-ratio.css';
+@import './lib/ui/effects/scroll-parallax.css';
+@import './lib/ui/effects/blend-overlay.css';
 
 /*
  * Hannahs Lichtwald — design language v0.1 (source of truth: hannah-kramer-saas/design.md)
@@ -73,6 +83,19 @@
 }
 :root {
 	--glass-blur: blur(16px) saturate(140%);
+}
+/* prefers-reduced-transparency → solid background instead of glass (Apple motion rules) */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+	.glass {
+		background: var(--color-surface);
+	}
+}
+@media (prefers-reduced-transparency: reduce) {
+	.glass {
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		background: var(--color-surface);
+	}
 }
 
 /* Lantern glow (CTA, active choice, mission-unlock celebration) */
@@ -178,6 +201,24 @@
 .touch-target {
 	min-height: 56px;
 	min-width: 56px;
+}
+
+/* Apple motion rules — size-specific typography: display headings (≥32px)
+   get tighter tracking and a shorter line height. */
+@media (min-width: 40rem) {
+	h1,
+	h2 {
+		letter-spacing: -0.01em;
+		line-height: 1.05;
+	}
+}
+
+/* prefers-contrast: more → stronger borders (Apple motion rules) */
+@media (prefers-contrast: more) {
+	.glass,
+	.frosted-nav {
+		border-color: rgba(30, 27, 75, 0.4);
+	}
 }
 
 /* prefers-reduced-motion: disable all transitions (design.md invariant) */

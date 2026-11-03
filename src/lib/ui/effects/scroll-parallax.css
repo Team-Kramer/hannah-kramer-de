@@ -1,0 +1,26 @@
+/* Ania #15 — Scroll-driven animation (hero parallax, background shift ≤ 20px).
+   animation-timeline: scroll() — modern browsers only; no-op elsewhere.
+   No parallax on game pages (design.md). */
+@supports (animation-timeline: scroll()) {
+	.hero-parallax {
+		animation: hero-parallax-shift linear both;
+		animation-timeline: scroll();
+		animation-range: 0 600px;
+		will-change: transform;
+	}
+
+	@keyframes hero-parallax-shift {
+		from {
+			transform: translateY(0);
+		}
+		to {
+			transform: translateY(20px);
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hero-parallax {
+		animation: none !important;
+	}
+}
