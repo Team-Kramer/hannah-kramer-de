@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build
+.svelte-kit/
+build/
+
+# env
+.env
+.env.*
+!.env.example
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Godot (game/ tree) — addons/ are KEPT (godot-ui, raycast, voxel) per triage
+game/.godot/
+game/.export/
+
+# misc
+*.log
+.DS_Store

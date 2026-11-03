@@ -1,0 +1,135 @@
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/600.css';
+@import '@fontsource/nunito/700.css';
+@import '@fontsource/nunito/800.css';
+@import '@fontsource/material-symbols-outlined/400.css';
+@import 'tailwindcss';
+
+/*
+ * Hannahs Lichtwald — design language v0.1 (source of truth: hannah-kramer-saas/design.md)
+ * "brave, imaginative, warm, never scary" — deep indigo night + soft gold light.
+ * Gold is used for ONE thing per screen. No red on the game pages.
+ */
+@theme {
+	/* Night stage */
+	--color-bg: #1e1b4b;
+	--color-forest: #274438;
+
+	/* Surfaces */
+	--color-surface: #fff9ef;
+	--color-surface-elevated: #ffffff;
+	--color-border: #e5d9c5;
+
+	/* Text */
+	--color-text: #2a2440;
+	--color-text-secondary: #5c5670;
+	--color-text-on-night: #f5f1ff;
+
+	/* Accent (soft gold — one thing per screen) */
+	--color-accent: #f5b942;
+	--color-accent-hover: #e0a52e;
+	--color-accent-light: #fdf3dc;
+
+	/* Status */
+	--color-success: #3e9b5f;
+	--color-warning: #c97b2d;
+	--color-danger: #c2554f; /* admin/destructive only — never on game pages */
+
+	/* Public-face additions */
+	--color-glow-gold: rgba(245, 185, 66, 0.45);
+	--color-glass-bg: rgba(255, 249, 239, 0.65);
+	--color-on-gold: #2a2440; /* contrast 8.35:1 on --color-accent */
+	--color-on-night: #f5f1ff; /* contrast 14.39:1 on --color-bg */
+
+	/* Type */
+	--font-sans: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial,
+		sans-serif;
+
+	/* Spacing (8px grid) */
+	--spacing: 0.25rem;
+
+	/* Radius — picture-book cards use 16–24px */
+	--radius-card: 16px;
+	--radius-panel: 24px;
+	--radius-pill: 9999px;
+
+	/* Elevation — warm, not harsh */
+	--shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.08);
+	--shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+	/* Motion — 150–300ms */
+	--ease-out-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	--duration-fast: 150ms;
+	--duration-base: 200ms;
+	--duration-slow: 300ms;
+}
+
+/* Glass panels (Ania #1/#2, light variant) */
+.glass {
+	background: var(--color-glass-bg);
+	-webkit-backdrop-filter: var(--glass-blur);
+	backdrop-filter: var(--glass-blur);
+	border: 1px solid rgba(255, 249, 239, 0.35);
+}
+:root {
+	--glass-blur: blur(16px) saturate(140%);
+}
+
+/* Lantern glow (CTA, active choice, mission-unlock celebration) */
+.glow-gold {
+	box-shadow: 0 0 24px var(--color-glow-gold);
+}
+
+/* Keyframes */
+@keyframes pulse-gold {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(245, 185, 66, 0);
+	}
+	50% {
+		box-shadow: 0 0 24px 6px rgba(245, 185, 66, 0.45);
+	}
+}
+@keyframes cross-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes confetti-fall {
+	from {
+		transform: translateY(-10vh) rotate(0deg);
+		opacity: 1;
+	}
+	to {
+		transform: translateY(110vh) rotate(540deg);
+		opacity: 0;
+	}
+}
+
+.animate-pulse-gold {
+	animation: pulse-gold 300ms var(--ease-out-soft);
+}
+.animate-cross-fade {
+	animation: cross-fade 200ms var(--ease-out-soft);
+}
+
+/* Touch first: ≥56px targets on all game-page interactive elements (design.md invariant) */
+.touch-target {
+	min-height: 56px;
+	min-width: 56px;
+}
+
+/* prefers-reduced-motion: disable all transitions (design.md invariant) */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

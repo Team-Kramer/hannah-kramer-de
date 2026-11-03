@@ -1,0 +1,36 @@
+# GDScript lint (gdtoolkit) for the ported game/ tree.
+# Ported from GodotProjectZero/.github/workflows/gdlint.yml; paths re-homed to game/.
+name: gdlint
+
+on:
+  push:
+    paths:
+      - 'game/**'
+  pull_request:
+    paths:
+      - 'game/**'
+
+jobs:
+  gdlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install gdtoolkit
+        run: pip install "gdtoolkit==4.*"
+
+      - name: Run gdlint
+        run: |
+          gdlint \
+            game/assets \
+            game/global \
+            game/resources \
+            game/scenes \
+            --config game/.gdlint.yml \
+            --problems-threshold 1

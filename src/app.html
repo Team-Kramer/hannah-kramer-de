@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1E1B4B" />
+		<meta
+			name="description"
+			content="Hannah Kramer — Kinder-Spiel & Mitbestimmung. Hannahs Lichtwald: ein warmes, nie gruseliges Spiel, in dem Kinder mitbestimmen. Visitenkarte, Blog und Spiel."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Hannah Kramer" />
+		<meta property="og:locale" content="de_DE" />
+		<meta name="twitter:card" content="summary" />
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "Person",
+				"name": "Hannah Kramer",
+				"url": "https://hannah-kramer.de",
+				"jobTitle": "Spielerin & Mitbestimmerin"
+			}
+		</script>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "VideoGame",
+				"name": "Hannahs Lichtwald",
+				"url": "https://hannah-kramer.de/spiel/",
+				"playUrl": "https://hannah-kramer.de/spiel/",
+				"genre": "Puzzle",
+				"audience": { "@type": "PeopleAudience", "audienceType": "Kinder" }
+			}
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
