@@ -1,8 +1,9 @@
 <script lang="ts">
 	import GameEmbed from '$lib/components/GameEmbed.svelte';
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 
-	let { mission }: PageData = $props();
+	let { data }: PageProps = $props();
+	const mission = $derived(data.mission);
 </script>
 
 <svelte:head>
