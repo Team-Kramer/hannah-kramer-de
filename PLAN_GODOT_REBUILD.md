@@ -20,6 +20,7 @@ The following implementation files are present, but their behavior and completen
 - `game/global/mission/decision.gd` and `game/global/mission/outcomes.gd`
 - `game/scenes/ui/screen/mission_screen/mission_screen.tscn` and `.gd`
 - `game/docs/mission-authoring.md` and `docs/story-api-contract.md`
+- `docs/concept-diary-comic.md` — the diary-comic concept: 3-panel layout (left comic flow / middle location / right resources), the Lichtkatze guide, the Bergkamm backdrop, per-kid friendship, and reduced resources in story 1
 - `.github/workflows/pages.yml` builds the Godot Web export and stages it under `build/spiel/engine/`
 
 The existence of a file is not proof that its behavior is complete. Confirm each existing implementation against this checklist before extending or replacing it.
@@ -27,6 +28,8 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 **Baseline measured 2026-11-04:** `game/assets/` is approximately 1.5 MB; generated `game/.godot/` is approximately 6 MB and `game/.export/` approximately 100 MB (both ignored). Godot 4.4 headless import/boot succeeds, but editor shutdown reports invalid/duplicate resource UIDs and retained audio/addon resources; clean these during the strip/baseline phase before calling startup diagnostics clean.
 
 **Additional vision decisions:** Mission 01 is the first playable loop; Missions 02–07 stay locked teasers until their content exists. The four named resources (Lichttropfen, Mut-Sterne, Freundschafts-Funken, Rhythmus-Noten), visible world effects, save/resume, and kid-friendly mission authoring are part of the destination—not a second engine rewrite. A timed Schatten der Eile mechanic proposed in the detailed source plan conflicts with the no-timer/no-pressure invariant below, so the Shadow remains a non-timed story voice.
+
+**Diary-comic concept (2026-11-05 pivot):** the game is a **diary** with a 3-panel layout — left = comic story flow (cartoon panels + subtext, replacing the dark text narrative; TTS later), middle = location screen (gather + decisions + dialogs), right = gathered resources. A **Lichtkatze** (cat guide, `game/assets/image/art/cat.png`) appears from the **Bergkamm** (mountain range) backdrop, talks, and frames the decision. **Friendship** is tracked per kid + cat and drives later outcomes. **Story 1 uses reduced resources** (Lichttropfen + Freundschafts-Funken active; Mut-Sterne / Rhythmus-Noten dormant). See `docs/concept-diary-comic.md`.
 
 ## Non-negotiable invariants
 
@@ -84,19 +87,26 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 
 **Exit check:** a player can complete the Mission 01 loop from intro to outcome using each supported decision mode.
 
-## Phase 3 — Game presentation and interaction
+## Phase 3 — Diary-comic presentation (3-panel layout)
 
 **Depends on:** Phase 2. Run in parallel with Phase 4 where paths do not conflict.
 
-- [ ] Replace the old game's presentation with Lichtwald names, story framing, labels, and visual hierarchy; retain only engine UI that supports this flow.
-- [ ] Make the mission screen fit the Godot 960×540 viewport and adapt to mobile/web aspect ratios without clipping text or controls.
+**Concept:** `docs/concept-diary-comic.md`. The mission screen becomes a **diary** with three panels matching the reference screenshot: **left = comic story flow** (cartoon panels + subtext, TTS later), **middle = location screen** (gather + decisions + dialogs), **right = gathered resources**.
+
+- [ ] Build the 3-panel diary layout in `mission_screen.tscn` (left ~45%, middle ~40%, right ~15% of the 960×540 viewport) and re-architect `mission_screen.gd` to drive it.
+- [ ] **Left — comic flow:** a vertical, scrollable flow of comic panels; each panel = cartoon image (described in text now, generated later) + subtext; current panel auto-scrolls into view; the Bergkamm is a recurring backdrop.
+- [ ] **Middle — location screen:** location scene (Spielplatz for Mission 01) + resource-gathering cooldown buttons (GodotProjectZero `progress_button` + `resource_generator`) + decisions (Self/Vote/Moderate) + dialogs (`npc_dialog`).
+- [ ] **Right — resources:** `resource_tracker` showing Lichttropfen (active) + Freundschafts-Funken (active) + Mut-Sterne / Rhythmus-Noten (dormant, "kommt später" hint).
+- [ ] **Lichtkatze:** the cat guide appears from the Bergkamm direction, talks via `npc_dialog`, frames the decision, and offers the compromise (Moderate) option; uses `game/assets/image/art/cat.png`.
+- [ ] **Friendship tracking:** per-kid + Lichtkatze Freundschafts-Funken; decisions adjust friendship (gentle, non-punitive); feeds vote weight `1 + 0.1 × Freundschaft`; later outcomes branch on friendship level.
+- [ ] **Reduced resources in story 1:** only Lichttropfen + Freundschafts-Funken active; Mut-Sterne / Rhythmus-Noten dormant (shown, not required).
+- [ ] Extend `MissionData` with `comic_panels` (left flow) and `location` (middle) fields; keep the existing character/option/outcome fields.
 - [ ] Apply the indigo/cream/gold palette and Nunito typography consistently; use gold as a focused interaction/feedback accent rather than a global fill.
 - [ ] Meet the 56 px touch-target minimum for every interactive game control and verify keyboard focus order.
 - [ ] Provide clear selected, unavailable, loading, saving, retry, and unlocked states; never use color as the only status cue.
 - [ ] Implement motion only where it supports comprehension; respect `prefers-reduced-motion`/the agreed Godot equivalent and avoid flashing or full-screen surprises.
-- [ ] Add or refine the gentle Schatten der Eile treatment only if the story source requires it; no countdown, urgency mechanic, or frightening visual/audio treatment.
 
-**Exit check:** the complete flow is legible and usable on desktop and a narrow mobile viewport, with no child-safety or accessibility blocker.
+**Exit check:** the diary layout renders all three panels; the child can read the comic flow, gather resources, talk to the kids + Lichtkatze, make a decision, and see the outcome as a new comic panel; legible and usable on desktop and a narrow mobile viewport, with no child-safety or accessibility blocker.
 
 ## Phase 4 — Rebuild content assets
 
