@@ -15,6 +15,12 @@ var save_datas: Dictionary = {}
 var default_save_data: Dictionary = {}
 
 var resources: Dictionary = {}
+var mission_state: Dictionary = {
+	"completed": {},
+	"unlocks": [],
+	"schatten_der_eile": 0,
+	"character_freundschaft": {}
+}
 var workers: Dictionary = {}
 var substances: Dictionary = {}
 var events: Dictionary = {}
@@ -532,6 +538,7 @@ func _load_save_files() -> void:
 func _export_save_data() -> Dictionary:
 	var save_data: Dictionary = {}
 	save_data["resources"] = resources
+	save_data["mission_state"] = mission_state.duplicate(true)
 	save_data["workers"] = workers
 	save_data["substances"] = substances
 	save_data["events"] = events
@@ -552,6 +559,7 @@ func _export_save_data() -> Dictionary:
 
 func _import_save_data(save_data: Dictionary) -> void:
 	resources = _get_resources(save_data)
+	mission_state = _get_mission_state(save_data)
 	workers = _get_workers(save_data)
 	substances = _get_substances(save_data)
 	events = _get_events(save_data)
@@ -576,6 +584,28 @@ func _import_save_data(save_data: Dictionary) -> void:
 
 func _get_resources(save_data: Dictionary) -> Dictionary:
 	return save_data.get("resources", resources)
+
+
+func _get_mission_state(save_data: Dictionary) -> Dictionary:
+	var defaults: Dictionary = {
+		"completed": {},
+		"unlocks": [],
+		"schatten_der_eile": 0,
+		"character_freundschaft": {}
+	}
+	var stored_state: Variant = save_data.get("mission_state", {})
+	if not stored_state is Dictionary:
+		push_warning("Ignoring invalid mission_state in save data.")
+		return defaults
+
+	for field: String in defaults:
+		if not stored_state.has(field):
+			continue
+		if typeof(stored_state[field]) != typeof(defaults[field]):
+			push_warning("Ignoring invalid mission_state.%s in save data." % field)
+			continue
+		defaults[field] = stored_state[field]
+	return defaults
 
 
 func _get_workers(save_data: Dictionary) -> Dictionary:

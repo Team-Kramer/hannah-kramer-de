@@ -6,21 +6,13 @@
 script = ExtResource("1_mission")
 id = "mission_spielplatz"
 title = "Der kaputte Spielplatz"
-intro_text = """Im Lichtwald gibt es einen alten Spielplatz.
-Die Schaukel hängt schief. Die Rutsche hat ein Loch.
-Und Juan kommt mit seinem Rollstuhl gar nicht richtig hin.
-
-Plötzlich findet Oma Linde einen leuchtenden Schatz –
-120 Lichttropfen!
-
-Alle haben Ideen, was damit passieren soll.
-Aber wer entscheidet eigentlich?"""
+intro_text = "Im Lichtwald gibt es einen alten Spielplatz.\nDie Schaukel hängt schief. Die Rutsche hat ein Loch.\nUnd Juan kommt mit seinem Rollstuhl gar nicht richtig hin.\n\nPlötzlich findet Oma Linde einen leuchtenden Schatz –\n120 Lichttropfen!\n\nAlle haben Ideen, was damit passieren soll.\nAber wer entscheidet eigentlich?"
 characters = Array[Dictionary]([
-	{"id": &"juan", "name": &"Juan", "wish": &"barrierefrei", "mood": &"Hoffnungsvoll, etwas schüchtern", "dialogs": ["Einen Weg ohne Stufen… und eine Schaukel, in die ich reinrollkommen kann.", "Als ob ich unsichtbar bin. Dabei möchte ich doch einfach nur dabei sein."]},
-	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
-	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
-	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
-	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]}
+	{"id": &"juan", "name": &"Juan", "wish": &"barrierefrei", "mood": &"Hoffnungsvoll, etwas schüchtern", "can_vote": true, "dialogs": ["Einen Weg ohne Stufen… und eine Schaukel, in die ich reinrollkommen kann.", "Als ob ich unsichtbar bin. Dabei möchte ich doch einfach nur dabei sein."]},
+	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "can_vote": true, "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
+	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "can_vote": true, "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
+	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "can_vote": true, "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
+	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "can_vote": false, "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]}
 ])
 resource_pool = 120
 options = Array[Dictionary]([

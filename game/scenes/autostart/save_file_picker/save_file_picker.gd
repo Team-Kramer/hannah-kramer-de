@@ -49,7 +49,8 @@ func _force_unique_save_file_name(save_file_name: String) -> String:
 
 
 func _check_url_params() -> void:
-	# Web deep link: /spiel/?mission=mission-01 opens the mission directly.
+	# Public slug mission-01 maps to MissionData.id mission_spielplatz.
+	# Deep link: /spiel/?mission=mission-01 opens the mission directly.
 	# Web resume link: /spiel/?load=last resumes the most recently played save.
 	# Web share link: /spiel/mission-01/?mission=mission-01#z=<base64url>
 	# imports the shared save snapshot, then loads it.

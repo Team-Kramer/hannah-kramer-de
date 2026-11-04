@@ -1,7 +1,7 @@
 # Hannahs Lichtwald – Mission 01 content layer
 # Data model per docs 01 §5 / 02 §7 of the Lichtwald plan.
-extends Resource
 class_name MissionData
+extends Resource
 
 @export var id: String
 @export var title: String

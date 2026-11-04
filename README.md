@@ -28,13 +28,14 @@ pnpm sync-tokens
 ## Deploy
 
 Push to `main`. The `pages.yml` workflow: pnpm install → check → test → build →
-Godot headless Web export (Docker, only when `game/` changed) → stage the export
+Godot headless Web export → stage the export
 at `build/spiel/engine/` → deploy to GitHub Pages.
 
 Pages source must be **GitHub Actions** (build type: workflow).
 
 ## Plans
 
-- `PLAN_STATIC_HOMEPAGE.md` + `PLAN_GODOT_ASSET_STRIP.md` live in
-  `hannah-kramer-saas` (source of truth).
+- [PLAN_STATIC_HOMEPAGE.md](./PLAN_STATIC_HOMEPAGE.md) — restart from Phase 1 and verify the site/CI baseline.
+- [PLAN_GODOT_ASSET_STRIP.md](./PLAN_GODOT_ASSET_STRIP.md) — checklist to audit the existing stripped engine.
+- [PLAN_GODOT_REBUILD.md](./PLAN_GODOT_REBUILD.md) — checklist to rebuild the engine with Lichtwald content.
 - Execution plan: `family-orga/hannah-kramer-de/PLAN.md`.
