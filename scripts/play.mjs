@@ -8,6 +8,9 @@
 //   node scripts/play.mjs shot <name>              # screenshot to /tmp/hannah-<name>.png
 //   node scripts/play.mjs click <gx> <gy>          # click at GAME coords (960x540 space)
 //   node scripts/play.mjs click <gx> <gy> <name>   # click + screenshot after
+//   node scripts/play.mjs boxes                    # print canvas rect + coord mapping
+//   node scripts/play.mjs run 'shot:a' 'click:480:470:b' 'wait:800'
+//                                                  # scripted play in one session
 //   node scripts/play.mjs type <text>              # type into the game (dev console)
 //   node scripts/play.mjs url <full-url>           # load an arbitrary game URL
 //   node scripts/play.mjs logs                     # load, wait, dump console logs
@@ -73,6 +76,11 @@ async function gamePoint(gx, gy) {
 	return { x: ox + gx * scale, y: oy + gy * scale };
 }
 
+async function canvasBox() {
+	const canvas = await engineFrame.$('canvas');
+	return canvas ? canvas.boundingBox() : null;
+}
+
 async function clickGame(gx, gy, label) {
 	const p = await gamePoint(gx, gy);
 	console.log(`Click game(${gx}, ${gy}) -> page(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`);
@@ -96,6 +104,41 @@ switch (cmd) {
 		const gx = Number(args[1]);
 		const gy = Number(args[2]);
 		await clickGame(gx, gy, args[3]);
+		break;
+	}
+	case 'boxes': {
+		// Print the canvas rect and the page->game mapping so clicks can be
+		// aimed from a screenshot.
+		const box = await canvasBox();
+		if (!box) {
+			console.error('no canvas');
+			break;
+		}
+		const scale = Math.min(box.width / GAME_W, box.height / GAME_H);
+		const ox = box.x + (box.width - GAME_W * scale) / 2;
+		const oy = box.y + (box.height - GAME_H * scale) / 2;
+		console.log(JSON.stringify({ box, scale, ox, oy }, null, 2));
+		console.log('game(0,0)    -> page(' + ox.toFixed(1) + ',' + oy.toFixed(1) + ')');
+		console.log('game(960,540)-> page(' + (ox + 960 * scale).toFixed(1) + ',' + (oy + 540 * scale).toFixed(1) + ')');
+		break;
+	}
+	case 'run': {
+		// Play a scripted sequence in ONE browser session (state persists
+		// between steps, unlike separate click invocations).
+		//   node scripts/play.mjs run 'shot:intro' 'click:480:470:listen' 'click:...'
+		const steps = args.slice(1);
+		for (const step of steps) {
+			const [action, ...rest] = step.split(':');
+			if (action === 'shot') {
+				await shot(rest[0] || 'step');
+			} else if (action === 'click') {
+				await clickGame(Number(rest[0]), Number(rest[1]), rest[2]);
+			} else if (action === 'wait') {
+				await page.waitForTimeout(Number(rest[0]) || 1000);
+			} else {
+				console.error('unknown run action: ' + action);
+			}
+		}
 		break;
 	}
 	case 'type': {
