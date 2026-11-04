@@ -38,7 +38,7 @@ export const de = {
 	},
 	profile: {
 		title: 'Wer ist Hannah?',
-		bio: 'Hannah Kramer ist 10 Jahre alt und baut Spiele, in denen Kinder lernen, wie wichtig es ist, einander zuzuhören und gemeinsam zu entscheiden. Der Lichtwald ist ihr Projekt: eine magische Welt, in der jede Stimme zählt — auch die leisen. Hannah entwickelt den Lichtwald mit ihrer Familie und teilt alles, was sie lernt, auf dieser Seite.',
+		bio: 'Hannah Kramer ist 4 Jahre alt und baut Spiele, in denen Kinder lernen, wie wichtig es ist, einander zuzuhören und gemeinsam zu entscheiden. Der Lichtwald ist ihr Projekt: eine magische Welt, in der jede Stimme zählt — auch die leisen. Hannah entwickelt den Lichtwald mit ihrer Familie und teilt alles, was sie lernt, auf dieser Seite.',
 		links: {
 			github: 'GitHub',
 			blog: 'Blog',
