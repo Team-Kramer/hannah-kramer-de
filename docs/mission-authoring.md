@@ -65,6 +65,33 @@ Komplettes Beispiel: [`game/resources/missions/mission_01_spielplatz.tres`](../g
 – 5 Figuren, 5 Optionen (120 Tropfen), 3 Modi, 3 Enden. Kopiere die Struktur,
 schreibe deinen eigenen Inhalt.
 
+## Die vier Lichtwald-Ressourcen
+
+Der Lichtwald kennt vier Ressourcen (Quelle: `01-Strategie-und-Start.md` §4).
+So sind sie im Spiel gespeichert und sichtbar:
+
+| Ressource | Bedeutung | Spielzustand | Wo sie wirkt |
+|---|---|---|---|
+| **Lichttropfen** | Energie / Baumaterial | `mission.resource_pool` (pro Mission, z. B. 120) | Budget für die gewählten Optionen; wird im Intro und in der Modus-Hilfe angezeigt |
+| **Mut-Sterne** | Zivilcourage & schwierige Entscheidungen | `SaveFile.mission_state.mut_sterne` (weltweit, startet bei 0) | Werden von `good`-Enden vergeben; der Moderations-Modus kostet `Decision.MUT_COST_MODERATE` (5) Mut-Sterne |
+| **Freundschafts-Funken** | Beziehungen & Vertrauen | `SaveFile.mission_state.character_freundschaft` (pro Figur, startet bei 0) | Erhöhen das Stimmengewicht im Abstimmungsmodus: `1 + 0,1 × Freundschaft`; werden von `good`-Enden vergeben |
+| **Rhythmus-Noten** | Tanz, Freude, gemeinsamer Takt | `SaveFile.mission_state.rhythmus` (weltweit, startet bei 0) | Noch nicht in Mission 01 vergeben; Platzhalter für spätere Missions-Enden (z. B. gemeinsame Feier) |
+
+Regeln:
+
+- **Lichttropfen** sind ein pro-Missions-Budget: Sie werden nicht abgezogen,
+  sondern begrenzen, was sich eine Mission leisten kann. Jede Option muss
+  einzeln und jede zulässige Kombination innerhalb des Pools liegen.
+- **Mut-Sterne, Freundschaft und Rhythmus** sind dauerhafte Weltwerte im
+  `SaveFile.mission_state` und wachsen über alle Missionen an.
+- Ein `good`-Ende vergibt immer einen positiven Weltwert (Mut-Sterne oder
+  Freundschaft) – das prüft der Validator.
+- Ein `middle`-Ende vergibt **keine** Weltwerte und keine Freischaltungen.
+- Ein `weak`-Ende vergibt nichts, löscht aber auch nichts: Die Mission bleibt
+  wiederholbar, und bereits gesammelte Werte bleiben erhalten.
+- Der Schatten der Eile ist **keine** Ressource: Er ist eine nicht-zeitgesteuerte
+  Story-Stimme, die drängeln darf, aber nie gewinnt.
+
 ## Regeln für den Lichtwald (child-safe)
 
 - Keine Angstfiguren, keine Zeitdruck-Timer, keine Strafen.

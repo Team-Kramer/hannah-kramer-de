@@ -208,6 +208,8 @@ func _test_mission_state_persistence() -> void:
 	var expected_state: Dictionary = {
 		"completed": {"mission_spielplatz": {"outcome": "good"}},
 		"unlocks": ["licht_rat"],
+		"mut_sterne": 15,
+		"rhythmus": 0,
 		"schatten_der_eile": 1,
 		"character_freundschaft": {"juan": 5}
 	}

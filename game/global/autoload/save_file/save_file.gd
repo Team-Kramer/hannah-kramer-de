@@ -18,6 +18,8 @@ var resources: Dictionary = {}
 var mission_state: Dictionary = {
 	"completed": {},
 	"unlocks": [],
+	"mut_sterne": 0,
+	"rhythmus": 0,
 	"schatten_der_eile": 0,
 	"character_freundschaft": {}
 }
@@ -590,6 +592,8 @@ func _get_mission_state(save_data: Dictionary) -> Dictionary:
 	var defaults: Dictionary = {
 		"completed": {},
 		"unlocks": [],
+		"mut_sterne": 0,
+		"rhythmus": 0,
 		"schatten_der_eile": 0,
 		"character_freundschaft": {}
 	}
