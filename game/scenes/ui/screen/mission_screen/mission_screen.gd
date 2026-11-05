@@ -58,7 +58,13 @@ func _ready() -> void:
 		_disable_decision_controls()
 		return
 	_build_ui()
-	_set_state(STATE_INTRO)
+	var completed: Dictionary = SaveFile.mission_state.get("completed", {})
+	var saved_outcome: Dictionary = completed.get(mission.id, {})
+	if not saved_outcome.is_empty():
+		# Resume: show the recorded outcome without re-applying its effects.
+		_show_resumed_outcome(str(saved_outcome.get("outcome", "")))
+	else:
+		_set_state(STATE_INTRO)
 	SignalBus.display_language_updated.connect(_on_display_language_updated)
 
 
@@ -335,9 +341,23 @@ func _show_outcome(built: Array[StringName]) -> void:
 	var effects_text: String = _format_effects(effects)
 	outcome_label.text = str(outcome.get("result_text", "")) + "\n\n" + effects_text
 	_add_comic_panel({"caption": str(outcome.get("comic_caption", ""))}, true)
-	_apply_effects(effects)
+	_apply_effects(effects, outcome_id)
 	_mark_completed(outcome_id, effects)
 	_refresh_resources()
+	_set_state(STATE_OUTCOME)
+
+
+func _show_resumed_outcome(outcome_id_text: String) -> void:
+	var outcome_id: StringName = StringName(outcome_id_text)
+	var outcome: Dictionary = _find_outcome(outcome_id)
+	if outcome.is_empty():
+		push_error("Mission %s has no recorded outcome %s." % [mission.id, outcome_id_text])
+		_set_state(STATE_INTRO)
+		return
+	var effects: Dictionary = Outcomes.effects_for(outcome_id)
+	outcome_label.text = str(outcome.get("result_text", "")) + "\n\n" + _format_effects(effects)
+	_add_comic_panel({"caption": str(outcome.get("comic_caption", ""))}, true)
+	# Effects were already applied when the outcome was first recorded; do not re-apply.
 	_set_state(STATE_OUTCOME)
 
 
@@ -351,7 +371,16 @@ func _on_retry_button_up() -> void:
 	_set_state(STATE_DECISION)
 
 
-func _apply_effects(effects: Dictionary) -> void:
+func _applied_outcome_id() -> StringName:
+	var completed: Dictionary = SaveFile.mission_state.get("completed", {})
+	var record: Dictionary = completed.get(mission.id, {})
+	return StringName(str(record.get("applied", "")))
+
+
+func _apply_effects(effects: Dictionary, outcome_id: StringName) -> void:
+	# Effects apply once per outcome; retrying or resuming never re-applies them.
+	if effects.has("retry") or _applied_outcome_id() == outcome_id:
+		return
 	if effects.has("mut_sterne"):
 		SaveFile.mission_state["mut_sterne"] = int(SaveFile.mission_state.get("mut_sterne", 0)) + int(effects["mut_sterne"])
 	if effects.has("freundschaft"):
@@ -369,7 +398,11 @@ func _apply_effects(effects: Dictionary) -> void:
 
 func _mark_completed(outcome_id: StringName, effects: Dictionary) -> void:
 	var completed: Dictionary = SaveFile.mission_state.get("completed", {})
-	completed[mission.id] = {"outcome": str(outcome_id)}
+	var record: Dictionary = completed.get(mission.id, {})
+	record["outcome"] = str(outcome_id)
+	if not effects.has("retry"):
+		record["applied"] = str(outcome_id)
+	completed[mission.id] = record
 	SaveFile.mission_state["completed"] = completed
 	if effects.has("unlocks"):
 		var unlocks: Array = SaveFile.mission_state.get("unlocks", [])
