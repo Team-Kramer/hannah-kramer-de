@@ -195,6 +195,10 @@ func _test_mission_screen() -> void:
 	confirm_button.emit_signal("pressed")
 	var outcome_panel: Panel = screen.get_node("%OutcomePanel")
 	_check(outcome_panel.visible, "Vote mode completes and shows its outcome")
+	var retry_button: Button = screen.get_node("%RetryButton")
+	_check(retry_button.visible, "Outcome offers a gentle retry route")
+	retry_button.emit_signal("pressed")
+	_check(screen.get("state") == &"decision", "Retry returns to the decision state")
 	screen.queue_free()
 	await process_frame
 

@@ -36,6 +36,7 @@ var character_status_labels: Dictionary = {}
 @onready var confirm_button: Button = %ConfirmButton
 @onready var outcome_label: Label = %OutcomeLabel
 @onready var outcome_panel: Panel = %OutcomePanel
+@onready var retry_button: Button = %RetryButton
 @onready var comic_flow: VBoxContainer = %ComicFlow
 @onready var comic_flow_scroll: ScrollContainer = %ComicFlowScroll
 @onready var gather_button: Button = %GatherButton
@@ -170,6 +171,7 @@ func _set_state(new_state: StringName) -> void:
 	confirm_button.visible = is_decision
 	gather_button.visible = is_decision and not mission.gather.is_empty()
 	outcome_panel.visible = state == STATE_OUTCOME
+	retry_button.visible = state == STATE_OUTCOME
 	_refresh_confirm()
 
 
@@ -251,10 +253,6 @@ func _on_option_toggled(toggled_on: bool, option_id: StringName) -> void:
 
 func _on_mode_self_button_up() -> void:
 	mode = &"self"
-	mode_help_label.text = (
-		"Du wählst eine oder zwei Ideen. Zusammen dürfen sie höchstens %d Lichttropfen kosten."
-		% mission.resource_pool
-	)
 	_refresh_confirm()
 
 
@@ -286,9 +284,18 @@ func _refresh_confirm() -> void:
 		&"vote", &"moderate":
 			confirm_button.disabled = false
 		_:
-			confirm_button.disabled = not Decision.is_valid_self_choice(
+			var valid: bool = Decision.is_valid_self_choice(
 				selected, mission.resource_pool + gathered, costs
 			)
+			confirm_button.disabled = not valid
+			if mode == &"self":
+				if not selected.is_empty() and not valid:
+					mode_help_label.text = "Zusammen kostet das zu viel Licht. Wähle eine Idee weniger – oder sammle noch Berg-Licht."
+				else:
+					mode_help_label.text = (
+						"Du wählst eine oder zwei Ideen. Zusammen dürfen sie höchstens %d Lichttropfen kosten."
+						% (mission.resource_pool + gathered)
+					)
 
 
 func _on_confirm_button_up() -> void:
@@ -331,6 +338,16 @@ func _show_outcome(built: Array[StringName]) -> void:
 	_apply_effects(effects)
 	_refresh_resources()
 	_set_state(STATE_OUTCOME)
+
+
+func _on_retry_button_up() -> void:
+	if state != STATE_OUTCOME:
+		return
+	# Retry is gentle: keep gathered light and friendship, return to the decision.
+	selected.clear()
+	for option_id: StringName in option_buttons:
+		option_buttons[option_id].button_pressed = false
+	_set_state(STATE_DECISION)
 
 
 func _apply_effects(effects: Dictionary) -> void:

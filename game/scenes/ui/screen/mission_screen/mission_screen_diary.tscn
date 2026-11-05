@@ -151,11 +151,22 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="OutcomeLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer"]
+[node name="OutcomeVBox" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OutcomeLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer/OutcomeVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Outcome"
 autowrap_mode = 3
+
+[node name="RetryButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer/OutcomeVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Noch einmal versuchen"
 
 [node name="RightPanel" type="PanelContainer" parent="RootMarginContainer/DiaryHBox"]
 layout_mode = 2
@@ -206,5 +217,6 @@ autowrap_mode = 3
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ContinueButton" to="." method="_on_continue_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/GatherButton" to="." method="_on_gather_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer/OutcomeVBox/RetryButton" to="." method="_on_retry_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ConfirmButton" to="." method="_on_confirm_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/BackButton" to="." method="_on_back_button_up"]
