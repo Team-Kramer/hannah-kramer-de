@@ -37,6 +37,7 @@ var character_status_labels: Dictionary = {}
 @onready var outcome_label: Label = %OutcomeLabel
 @onready var outcome_panel: Panel = %OutcomePanel
 @onready var comic_flow: VBoxContainer = %ComicFlow
+@onready var comic_flow_scroll: ScrollContainer = %ComicFlowScroll
 @onready var gather_button: Button = %GatherButton
 @onready var lichttropfen_label: Label = %LichttropfenLabel
 @onready var freundschaft_label: Label = %FreundschaftLabel
@@ -129,7 +130,7 @@ func _build_comic_flow() -> void:
 		_add_comic_panel(panel_data)
 
 
-func _add_comic_panel(panel_data: Dictionary) -> void:
+func _add_comic_panel(panel_data: Dictionary, scroll_to: bool = false) -> void:
 	var panel: PanelContainer = PanelContainer.new()
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 4)
@@ -139,6 +140,18 @@ func _add_comic_panel(panel_data: Dictionary) -> void:
 	vbox.add_child(caption)
 	panel.add_child(vbox)
 	comic_flow.add_child(panel)
+	if scroll_to:
+		_scroll_comic_to_bottom()
+
+
+func _scroll_comic_to_bottom() -> void:
+	# Deferred so the new panel's height is laid out before we scroll.
+	call_deferred("_do_scroll_comic_to_bottom")
+
+
+func _do_scroll_comic_to_bottom() -> void:
+	# A large value clamps to the maximum scroll position.
+	comic_flow_scroll.scroll_vertical = 100000
 
 
 func _set_state(new_state: StringName) -> void:
@@ -314,6 +327,7 @@ func _show_outcome(built: Array[StringName]) -> void:
 	var effects: Dictionary = Outcomes.effects_for(outcome_id)
 	var effects_text: String = _format_effects(effects)
 	outcome_label.text = str(outcome.get("result_text", "")) + "\n\n" + effects_text
+	_add_comic_panel({"caption": str(outcome.get("comic_caption", ""))}, true)
 	_apply_effects(effects)
 	_refresh_resources()
 	_set_state(STATE_OUTCOME)
