@@ -34,6 +34,7 @@ var character_status_labels: Dictionary = {}
 @onready var confirm_button: Button = %ConfirmButton
 @onready var outcome_label: Label = %OutcomeLabel
 @onready var outcome_panel: Panel = %OutcomePanel
+@onready var comic_flow: VBoxContainer = %ComicFlow
 
 
 func _ready() -> void:
@@ -67,7 +68,25 @@ func _build_ui() -> void:
 		options_flow.add_child(button)
 		option_buttons[option_id] = button
 	_build_characters()
+	_build_comic_flow()
 	_refresh_confirm()
+
+
+func _build_comic_flow() -> void:
+	for panel_data: Dictionary in mission.comic_panels:
+		_add_comic_panel(panel_data)
+
+
+func _add_comic_panel(panel_data: Dictionary) -> void:
+	var panel: PanelContainer = PanelContainer.new()
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 4)
+	var caption: Label = Label.new()
+	caption.text = str(panel_data.get("caption", ""))
+	caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(caption)
+	panel.add_child(vbox)
+	comic_flow.add_child(panel)
 
 
 func _set_state(new_state: StringName) -> void:

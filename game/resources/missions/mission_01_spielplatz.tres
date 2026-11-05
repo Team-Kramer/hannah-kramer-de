@@ -23,6 +23,13 @@ options = Array[Dictionary]([
 	{"id": &"alles_halb", "label": &"Alles nur halb", "cost": 120, "effect": &"Niemand ist richtig zufrieden"}
 ])
 decision_modes = Array[String](["self", "vote", "moderate"])
+comic_panels = Array[Dictionary]([
+	{"image": "", "caption": "Am Rande des Lichtwaldes, wo ein sanfter Bergzug den Wald umarmt, ist der Spielplatz kaputt.", "character": ""},
+	{"image": "", "caption": "Die Kinder des Waldes versammeln sich, um zu überlegen, was sie mit den 120 Lichttropfen tun können.", "character": ""},
+	{"image": "", "caption": "Aus Richtung des Bergkamms kommt die Lichtkatze, um zu helfen.", "character": "lichtkatze"},
+	{"image": "", "caption": "Jede Stimme hat eine Idee. Wer entscheidet, was gebaut wird?", "character": ""},
+	{"image": "", "caption": "Deine Entscheidung wird den Wald verändern.", "character": ""}
+])
 outcomes = Array[Dictionary]([
 	{"id": &"good", "condition": &"has_barrierefrei and option_count >= 2", "result_text": "Juan rollt zum ersten Mal auf den Spielplatz.\nEr lacht. Die anderen klatschen.\nOma Linde sagt leise: „So sieht ein Ort für alle aus.“\n\nIm Lichtwald entsteht etwas Neues: der erste Licht-Rat.", "effects": {"mut_sterne": 15, "freundschaft": 20, "unlocks": &"licht_rat"}},
 	{"id": &"middle", "condition": &"only loudest idea built (rutsche or fussball)", "result_text": "Der Spielplatz ist lauter und bunter.\nJuan sitzt am Rand und schaut zu.\nEtwas in Hannah spürt: Das war nicht ganz richtig.", "effects": {"schatten_der_eile": 1}},

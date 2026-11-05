@@ -32,6 +32,11 @@
 #       effects    Dictionary – world effects applied exactly once, e.g.
 #                             {mut_sterne, freundschaft, unlocks,
 #                              schatten_der_eile, retry}.
+#   comic_panels   Array[Dictionary] – the left diary flow (diary-comic
+#                             concept). Optional; each:
+#       image      String   – res:// path or "" for a text-only panel.
+#       caption    String   – short subtext shown under the image.
+#       character  String   – optional character id (portrait hint).
 class_name MissionData
 extends Resource
 
@@ -43,3 +48,4 @@ extends Resource
 @export var options: Array[Dictionary]  # id, label, cost, effect
 @export var decision_modes: Array[String]  # "self", "vote", "moderate"
 @export var outcomes: Array[Dictionary]  # id, condition, result_text, effects
+@export var comic_panels: Array[Dictionary]  # image, caption, character

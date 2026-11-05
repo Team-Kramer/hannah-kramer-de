@@ -1,7 +1,7 @@
 extends SceneTree
 
 const MISSION_PATH: String = "res://resources/missions/mission_01_spielplatz.tres"
-const MISSION_SCREEN_PATH: String = "res://scenes/ui/screen/mission_screen/mission_screen.tscn"
+const MISSION_SCREEN_PATH: String = "res://scenes/ui/screen/mission_screen/mission_screen_diary.tscn"
 
 var failures: int = 0
 
