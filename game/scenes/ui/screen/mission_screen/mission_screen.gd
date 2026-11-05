@@ -35,6 +35,10 @@ var character_status_labels: Dictionary = {}
 @onready var outcome_label: Label = %OutcomeLabel
 @onready var outcome_panel: Panel = %OutcomePanel
 @onready var comic_flow: VBoxContainer = %ComicFlow
+@onready var lichttropfen_label: Label = %LichttropfenLabel
+@onready var freundschaft_label: Label = %FreundschaftLabel
+@onready var mut_sterne_label: Label = %MutSterneLabel
+@onready var rhythmus_label: Label = %RhythmusLabel
 
 
 func _ready() -> void:
@@ -69,7 +73,22 @@ func _build_ui() -> void:
 		option_buttons[option_id] = button
 	_build_characters()
 	_build_comic_flow()
+	_refresh_resources()
 	_refresh_confirm()
+
+
+func _refresh_resources() -> void:
+	var spent: int = 0
+	for option_id: StringName in selected:
+		spent += int(costs.get(option_id, 0))
+	var remaining: int = mission.resource_pool - spent
+	lichttropfen_label.text = "Lichttropfen: %d" % remaining
+	var freundschaft: int = 0
+	for value in SaveFile.mission_state.get("character_freundschaft", {}).values():
+		freundschaft += int(value)
+	freundschaft_label.text = "Freundschafts-Funken: %d" % freundschaft
+	mut_sterne_label.text = "Mut-Sterne: %d" % int(SaveFile.mission_state.get("mut_sterne", 0))
+	rhythmus_label.text = "Rhythmus-Noten: %d" % int(SaveFile.mission_state.get("rhythmus", 0))
 
 
 func _build_comic_flow() -> void:
@@ -178,6 +197,7 @@ func _on_option_toggled(toggled_on: bool, option_id: StringName) -> void:
 			selected.append(option_id)
 	else:
 		selected.erase(option_id)
+	_refresh_resources()
 	_refresh_confirm()
 
 
@@ -258,7 +278,23 @@ func _show_outcome(built: Array[StringName]) -> void:
 	var effects: Dictionary = Outcomes.effects_for(outcome_id)
 	var effects_text: String = _format_effects(effects)
 	outcome_label.text = str(outcome.get("result_text", "")) + "\n\n" + effects_text
+	_apply_effects(effects)
+	_refresh_resources()
 	_set_state(STATE_OUTCOME)
+
+
+func _apply_effects(effects: Dictionary) -> void:
+	if effects.has("mut_sterne"):
+		SaveFile.mission_state["mut_sterne"] = int(SaveFile.mission_state.get("mut_sterne", 0)) + int(effects["mut_sterne"])
+	if effects.has("freundschaft"):
+		var per_character: int = int(effects["freundschaft"])
+		var characters: Dictionary = SaveFile.mission_state.get("character_freundschaft", {})
+		for character: Dictionary in mission.characters:
+			var character_id: StringName = character.id
+			characters[character_id] = int(characters.get(character_id, 0)) + per_character
+		SaveFile.mission_state["character_freundschaft"] = characters
+	if effects.has("rhythmus"):
+		SaveFile.mission_state["rhythmus"] = int(SaveFile.mission_state.get("rhythmus", 0)) + int(effects["rhythmus"])
 
 
 func _find_outcome(outcome_id: StringName) -> Dictionary:
