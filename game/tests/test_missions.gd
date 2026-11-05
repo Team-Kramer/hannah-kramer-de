@@ -2,6 +2,7 @@ extends SceneTree
 
 const MISSION_PATH: String = "res://resources/missions/mission_01_spielplatz.tres"
 const MISSION_SCREEN_PATH: String = "res://scenes/ui/screen/mission_screen/mission_screen_diary.tscn"
+const TEST_SAVE_FILE: String = "test_disk_round_trip"
 
 var failures: int = 0
 
@@ -21,6 +22,7 @@ func _run_tests() -> void:
 		_test_outcomes()
 		_test_mission_state_persistence()
 		await _test_mission_screen()
+		_test_save_disk_round_trip()
 
 	if failures == 0:
 		print("Mission tests passed.")
@@ -250,6 +252,50 @@ func _test_mission_state_persistence() -> void:
 		"Mission int counters survive JSON round-trip"
 	)
 	save_file.set("mission_state", original_state)
+
+
+func _test_save_disk_round_trip() -> void:
+	var save_file: Node = root.get_node_or_null("SaveFile")
+	_check(save_file != null, "SaveFile autoload is available for disk round-trip")
+	if save_file == null:
+		return
+
+	# Use a scratch file so the default save is never touched.
+	var original_active: String = save_file.get("active_file_name")
+	save_file.set("active_file_name", TEST_SAVE_FILE + ".json")
+	save_file.set("mission_state", {
+		"completed": {"mission_spielplatz": {"outcome": "good"}},
+		"unlocks": ["licht_rat"],
+		"mut_sterne": 15,
+		"rhythmus": 3,
+		"schatten_der_eile": 2,
+		"character_freundschaft": {"juan": 5}
+	})
+	save_file.call("save_now")
+	_check(
+		DirAccess.dir_exists_absolute(FileSystemUtils.USER_PATH)
+		and FileAccess.file_exists(FileSystemUtils.USER_PATH + TEST_SAVE_FILE + ".json"),
+		"save_now writes the save file to disk"
+	)
+
+	# Simulate a fresh load: re-read from disk and restore mission state.
+	var from_disk: Dictionary = save_file.call("_read", TEST_SAVE_FILE + ".json")
+	var restored: Dictionary = save_file.call("_get_mission_state", from_disk)
+	_check(
+		int(restored.get("mut_sterne", 0)) == 15
+		and int(restored.get("rhythmus", 0)) == 3
+		and int(restored.get("schatten_der_eile", 0)) == 2,
+		"Int mission counters survive a real disk round-trip"
+	)
+	_check(
+		restored.get("completed", {}).has("mission_spielplatz")
+		and restored.get("unlocks", []).has("licht_rat"),
+		"Completed and unlocks survive a real disk round-trip"
+	)
+
+	# Clean up the scratch file and restore the active file name.
+	DirAccess.remove_absolute(FileSystemUtils.USER_PATH + TEST_SAVE_FILE + ".json")
+	save_file.set("active_file_name", original_active)
 
 
 func _has_error(errors: PackedStringArray, fragment: String) -> bool:
