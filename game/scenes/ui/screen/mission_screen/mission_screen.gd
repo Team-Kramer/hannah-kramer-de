@@ -336,6 +336,7 @@ func _show_outcome(built: Array[StringName]) -> void:
 	outcome_label.text = str(outcome.get("result_text", "")) + "\n\n" + effects_text
 	_add_comic_panel({"caption": str(outcome.get("comic_caption", ""))}, true)
 	_apply_effects(effects)
+	_mark_completed(outcome_id, effects)
 	_refresh_resources()
 	_set_state(STATE_OUTCOME)
 
@@ -362,6 +363,21 @@ func _apply_effects(effects: Dictionary) -> void:
 		SaveFile.mission_state["character_freundschaft"] = characters
 	if effects.has("rhythmus"):
 		SaveFile.mission_state["rhythmus"] = int(SaveFile.mission_state.get("rhythmus", 0)) + int(effects["rhythmus"])
+	if effects.has("schatten_der_eile"):
+		SaveFile.mission_state["schatten_der_eile"] = int(SaveFile.mission_state.get("schatten_der_eile", 0)) + int(effects["schatten_der_eile"])
+
+
+func _mark_completed(outcome_id: StringName, effects: Dictionary) -> void:
+	var completed: Dictionary = SaveFile.mission_state.get("completed", {})
+	completed[mission.id] = {"outcome": str(outcome_id)}
+	SaveFile.mission_state["completed"] = completed
+	if effects.has("unlocks"):
+		var unlocks: Array = SaveFile.mission_state.get("unlocks", [])
+		var unlock_id: String = str(effects["unlocks"])
+		if not unlocks.has(unlock_id):
+			unlocks.append(unlock_id)
+		SaveFile.mission_state["unlocks"] = unlocks
+	SaveFile.save_now()
 
 
 func _find_outcome(outcome_id: StringName) -> Dictionary:

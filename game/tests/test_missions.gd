@@ -195,6 +195,19 @@ func _test_mission_screen() -> void:
 	confirm_button.emit_signal("pressed")
 	var outcome_panel: Panel = screen.get_node("%OutcomePanel")
 	_check(outcome_panel.visible, "Vote mode completes and shows its outcome")
+	var save_file: Node = root.get_node_or_null("SaveFile")
+	if save_file != null:
+		var mission_state: Dictionary = save_file.get("mission_state")
+		var completed: Dictionary = mission_state.get("completed", {})
+		var completed_mission: Dictionary = completed.get("mission_spielplatz", {})
+		_check(
+			completed_mission.get("outcome", "") == "middle",
+			"Vote outcome records mission completion"
+		)
+		_check(
+			int(mission_state.get("schatten_der_eile", 0)) >= 1,
+			"Vote outcome applies the schatten_der_eile effect"
+		)
 	var retry_button: Button = screen.get_node("%RetryButton")
 	_check(retry_button.visible, "Outcome offers a gentle retry route")
 	retry_button.emit_signal("pressed")
