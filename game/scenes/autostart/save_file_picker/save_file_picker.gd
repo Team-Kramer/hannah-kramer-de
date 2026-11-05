@@ -3,6 +3,8 @@ extends Node
 @onready var ui: Control = %UI
 @onready var save_file_tracker: SaveFileTracker = %SaveFileTracker
 
+var _current_save_file_name: String = ""
+
 ###############
 ## overrides ##
 ###############
@@ -38,8 +40,16 @@ func _initialize() -> void:
 
 
 func _change_scene_to_main_scene(save_file_name: String, metadata_name: String = "") -> void:
+	_current_save_file_name = save_file_name
 	SaveFile.initialize(save_file_name, metadata_name)
 	Scene.change_scene("main_scene")
+
+
+func _change_scene_to_mission_scene(save_file_name: String, metadata_name: String = "") -> void:
+	# Initialize first so the mission screen reads the persisted mission state
+	# (resume) and save_now() targets the right file instead of clobbering it.
+	SaveFile.initialize(save_file_name, metadata_name)
+	Scene.change_scene("mission_scene")
 
 
 func _force_unique_save_file_name(save_file_name: String) -> String:
@@ -82,8 +92,15 @@ func _check_url_params() -> void:
 	var mission_return: Variant = JavaScriptBridge.eval("window.__missionParam")
 	var mission_param: String = str(mission_return) if mission_return != null else ""
 	if mission_param == "mission-01":
+		# Resume the last played save (or the auto-created new one) so the
+		# mission screen sees persisted mission state.
+		var save_file_name: String = _current_save_file_name
+		if save_file_name.is_empty():
+			save_file_name = save_file_tracker.get_last_played_save_file_name()
+		if save_file_name.is_empty():
+			save_file_name = SaveFileTracker.DEFAULT_SAVE_FILE_NAME
 		get_tree().create_timer(0.5).timeout.connect(
-			func(): Scene.change_scene("mission_scene")
+			func(): _change_scene_to_mission_scene(save_file_name)
 		)
 
 

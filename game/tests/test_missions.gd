@@ -23,6 +23,7 @@ func _run_tests() -> void:
 		_test_mission_state_persistence()
 		await _test_mission_screen()
 		await _test_resume()
+		_test_initialize_import()
 		_test_save_disk_round_trip()
 
 	if failures == 0:
@@ -304,6 +305,59 @@ func _test_resume() -> void:
 	await process_frame
 	save_file.set("mission_state", original_state)
 
+
+func _test_initialize_import() -> void:
+	# Regression for the web deep-link flow: the mission scene boots without a
+	# prior initialize(), so the picker must initialize the save before
+	# switching to the mission. Verify initialize() imports the persisted
+	# mission state from disk into memory.
+	var save_file: Node = root.get_node_or_null("SaveFile")
+	_check(save_file != null, "SaveFile autoload is available for initialize test")
+	if save_file == null:
+		return
+
+	var original_active: String = save_file.get("active_file_name")
+	var original_state: Dictionary = save_file.get("mission_state").duplicate(true)
+	var test_file: String = TEST_SAVE_FILE + "_init"
+
+	# Write a save with a completed mission to disk.
+	save_file.set("active_file_name", test_file + ".json")
+	save_file.set("mission_state", {
+		"completed": {"mission_spielplatz": {"outcome": "good", "applied": "good"}},
+		"unlocks": ["licht_rat"],
+		"mut_sterne": 15,
+		"rhythmus": 0,
+		"schatten_der_eile": 0,
+		"character_freundschaft": {}
+	})
+	save_file.call("save_now")
+
+	# Simulate a fresh boot: _load_save_files() already populated save_datas
+	# from disk; wipe the in-memory mission state and re-import via initialize.
+	save_file.set("mission_state", {
+		"completed": {},
+		"unlocks": [],
+		"mut_sterne": 0,
+		"rhythmus": 0,
+		"schatten_der_eile": 0,
+		"character_freundschaft": {}
+	})
+	save_file.call("initialize", test_file, "")
+	var completed: Dictionary = save_file.get("mission_state").get("completed", {})
+	_check(
+		completed.has("mission_spielplatz")
+		and str(completed["mission_spielplatz"].get("outcome", "")) == "good",
+		"initialize() imports the persisted completed mission from disk"
+	)
+	_check(
+		int(save_file.get("mission_state").get("mut_sterne", 0)) == 15,
+		"initialize() imports the persisted mut_sterne from disk"
+	)
+
+	# Clean up the scratch file and restore the active file name.
+	DirAccess.remove_absolute(FileSystemUtils.USER_PATH + test_file + ".json")
+	save_file.set("active_file_name", original_active)
+	save_file.set("mission_state", original_state)
 
 
 func _test_save_disk_round_trip() -> void:
