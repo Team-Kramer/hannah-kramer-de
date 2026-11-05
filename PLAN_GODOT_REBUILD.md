@@ -1,7 +1,7 @@
 # Hannahs Lichtwald — Post-Strip Godot Rebuild Checklist
 
-**Updated:** 2026-11-04
-**Overall status:** In progress — Mission 01 intro/listening/decision/outcome flow, vote behavior, and save-state scaffolding are implemented; world resources, applied effects, moderation cost, art, and release QA remain.
+**Updated:** 2026-11-05
+**Overall status:** In progress — Mission 01 intro/listening/decision/outcome flow, vote behavior, save-state persistence, and resume/idempotent-retry are implemented (headless-verified); world resources, moderation cost, art, and release QA remain.
 **Scope:** Rebuild the stripped Godot engine into a warm incremental-and-decision game: a playable Mission 01 first, with a growing world, meaningful resource changes, and later missions.
 **Prerequisites:** [PLAN_STATIC_HOMEPAGE.md](./PLAN_STATIC_HOMEPAGE.md) Phase 1 baseline; [PLAN_GODOT_ASSET_STRIP.md](./PLAN_GODOT_ASSET_STRIP.md) strip audit.
 **Content sources:** supplied Lichtwald docs `00–04`, [docs/mission-authoring.md](./docs/mission-authoring.md), and [docs/story-api-contract.md](./docs/story-api-contract.md). The vision reinforces the loop: situation → listen → decide/vote/moderate → world reacts → story grows.
@@ -128,9 +128,9 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 **Depends on:** Phases 1–2.
 
 - [x] Add a backward-compatible `mission_state` save field and verify export/restore plus legacy-save defaults.
-- [ ] Persist mission progress, resources, completed outcomes, heard voices, and unlocked content through the existing SaveFile mechanism. *(Completed outcomes, unlocks, and the four resource counters now persist via `SaveFile.save_now()` with a disk round-trip test; heard-voice counts are still in-memory only.)*
-- [ ] Verify save/load and retry behavior on desktop and Web; corrupt or absent saves must lead to a clear new-game path, not a broken screen.
-- [ ] Verify URL mission/resume/share parameters reach the intended mission flow and remain consistent with the canonical mission ID.
+- [ ] Persist mission progress, resources, completed outcomes, heard voices, and unlocked content through the existing SaveFile mechanism. *(Completed outcomes, unlocks, and the four resource counters now persist via `SaveFile.save_now()` with a disk round-trip test; the `applied` field makes outcome effects idempotent; heard-voice counts are still in-memory only.)*
+- [ ] Verify save/load and retry behavior on desktop and Web; corrupt or absent saves must lead to a clear new-game path, not a broken screen. *(Desktop headless: resume opens the saved outcome, retry does not double-apply, and the web deep link now initializes the save before the mission scene. Corrupt/absent-save new-game path and a real-browser pass are still open.)*
+- [ ] Verify URL mission/resume/share parameters reach the intended mission flow and remain consistent with the canonical mission ID. *(The `mission=mission-01` deep link now resolves the save file and calls `SaveFile.initialize()` before switching scenes; resume/share params and a browser verification are still open.)*
 - [ ] Keep the save contract compatible with the homepage's read-only IndexedDB state parser; update that parser and its tests only when the engine save shape intentionally changes.
 - [ ] Add mission 02–07 as locked metadata/teasers only after the Mission 01 unlock chain is reliable; do not imply those missions are playable until their content exists.
 
