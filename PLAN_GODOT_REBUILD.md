@@ -82,7 +82,7 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 - [ ] Implement **Moderate**: apply the documented compromise rule and Mut-Sterne cost; show the child how the result reflects more than one wish. *(Compromise rule applied; Mut-Sterne cost still to be charged.)*
 - [ ] Keep all modes keyboard-operable and usable by touch; prevent double-submit and invalid/empty selections. *(Double-submit/invalid prevented; keyboard-focus verification pending.)*
 - [x] Evaluate the final built options against the documented outcomes: good (barrier-free option plus another), middle (partial/loudest-only result as defined by the source), and weak (including `alles_halb` or Juan being forgotten).
-- [ ] Apply outcome text and effects exactly once; verify resource changes and unlock state after completion. *(Effects applied once; unlock persistence pending.)*
+- [x] Apply outcome text and effects exactly once; verify resource changes and unlock state after completion. *(Effects applied once; completion + unlock persistence now saved via `SaveFile.save_now()`.)*
 - [x] Add a clear, gentle route from each outcome to continue, revisit, or retry without implying failure or blame.
 
 **Exit check:** a player can complete the Mission 01 loop from intro to outcome using each supported decision mode.
@@ -128,7 +128,7 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 **Depends on:** Phases 1–2.
 
 - [x] Add a backward-compatible `mission_state` save field and verify export/restore plus legacy-save defaults.
-- [ ] Persist mission progress, resources, completed outcomes, heard voices, and unlocked content through the existing SaveFile mechanism.
+- [ ] Persist mission progress, resources, completed outcomes, heard voices, and unlocked content through the existing SaveFile mechanism. *(Completed outcomes, unlocks, and the four resource counters now persist via `SaveFile.save_now()` with a disk round-trip test; heard-voice counts are still in-memory only.)*
 - [ ] Verify save/load and retry behavior on desktop and Web; corrupt or absent saves must lead to a clear new-game path, not a broken screen.
 - [ ] Verify URL mission/resume/share parameters reach the intended mission flow and remain consistent with the canonical mission ID.
 - [ ] Keep the save contract compatible with the homepage's read-only IndexedDB state parser; update that parser and its tests only when the engine save shape intentionally changes.
