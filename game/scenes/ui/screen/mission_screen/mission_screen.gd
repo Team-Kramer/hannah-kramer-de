@@ -288,11 +288,12 @@ func _on_confirm_button_up() -> void:
 		&"vote":
 			var wishes: Dictionary = {}
 			var freundschaft: Dictionary = {}
+			var saved_freundschaft: Dictionary = SaveFile.mission_state.get("character_freundschaft", {})
 			for character: Dictionary in mission.characters:
 				if not character.can_vote:
 					continue
 				wishes[character.id] = character.wish
-				freundschaft[character.id] = 0
+				freundschaft[character.id] = int(saved_freundschaft.get(character.id, 0))
 			var winner: StringName = Decision.vote(wishes, freundschaft, listened_counts)
 			built = []
 			if winner != &"":
