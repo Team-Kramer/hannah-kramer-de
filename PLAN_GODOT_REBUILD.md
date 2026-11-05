@@ -93,14 +93,14 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 
 **Concept:** `docs/concept-diary-comic.md`. The mission screen becomes a **diary** with three panels matching the reference screenshot: **left = comic story flow** (cartoon panels + subtext, TTS later), **middle = location screen** (gather + decisions + dialogs), **right = gathered resources**.
 
-- [ ] Build the 3-panel diary layout in `mission_screen.tscn` (left ~45%, middle ~40%, right ~15% of the 960×540 viewport) and re-architect `mission_screen.gd` to drive it.
-- [ ] **Left — comic flow:** a vertical, scrollable flow of comic panels; each panel = cartoon image (described in text now, generated later) + subtext; current panel auto-scrolls into view; the Bergkamm is a recurring backdrop.
+- [x] Build the 3-panel diary layout in `mission_screen_diary.tscn` (left ~45%, middle ~40%, right ~15% of the 960×540 viewport) and re-architect `mission_screen.gd` to drive it.
+- [x] **Left — comic flow:** a vertical, scrollable flow of comic panels; each panel = cartoon image (described in text now, generated later) + subtext; current panel auto-scrolls into view; the Bergkamm is a recurring backdrop.
 - [ ] **Middle — location screen:** location scene (Spielplatz for Mission 01) + resource-gathering cooldown buttons (GodotProjectZero `progress_button` + `resource_generator`) + decisions (Self/Vote/Moderate) + dialogs (`npc_dialog`).
-- [ ] **Right — resources:** `resource_tracker` showing Lichttropfen (active) + Freundschafts-Funken (active) + Mut-Sterne / Rhythmus-Noten (dormant, "kommt später" hint).
-- [ ] **Lichtkatze:** the cat guide appears from the Bergkamm direction, talks via `npc_dialog`, frames the decision, and offers the compromise (Moderate) option; uses `game/assets/image/art/cat.png`.
+- [x] **Right — resources:** `resource_tracker` showing Lichttropfen (active) + Freundschafts-Funken (active) + Mut-Sterne / Rhythmus-Noten (dormant, "kommt später" hint).
+- [x] **Lichtkatze:** the cat guide appears from the Bergkamm direction, talks via `npc_dialog`, frames the decision, and offers the compromise (Moderate) option; uses `game/assets/image/art/cat.png`.
 - [ ] **Friendship tracking:** per-kid + Lichtkatze Freundschafts-Funken; decisions adjust friendship (gentle, non-punitive); feeds vote weight `1 + 0.1 × Freundschaft`; later outcomes branch on friendship level.
-- [ ] **Reduced resources in story 1:** only Lichttropfen + Freundschafts-Funken active; Mut-Sterne / Rhythmus-Noten dormant (shown, not required).
-- [ ] Extend `MissionData` with `comic_panels` (left flow) and `location` (middle) fields; keep the existing character/option/outcome fields.
+- [x] **Reduced resources in story 1:** only Lichttropfen + Freundschafts-Funken active; Mut-Sterne / Rhythmus-Noten dormant (shown, not required).
+- [x] Extend `MissionData` with `comic_panels` (left flow) and `location` (middle) fields; keep the existing character/option/outcome fields.
 - [ ] Apply the indigo/cream/gold palette and Nunito typography consistently; use gold as a focused interaction/feedback accent rather than a global fill.
 - [ ] Meet the 56 px touch-target minimum for every interactive game control and verify keyboard focus order.
 - [ ] Provide clear selected, unavailable, loading, saving, retry, and unlocked states; never use color as the only status cue.

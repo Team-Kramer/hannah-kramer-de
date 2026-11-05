@@ -37,6 +37,12 @@
 #       image      String   – res:// path or "" for a text-only panel.
 #       caption    String   – short subtext shown under the image.
 #       character  String   – optional character id (portrait hint).
+#   gather         Dictionary – optional resource-gathering interaction
+#                             (middle panel, story 1). Fields:
+#       label      String   – button text, e.g. "Berg-Licht sammeln".
+#       amount     int      – Lichttropfen gained per tap.
+#       cooldown   float    – seconds the button is disabled after a tap.
+#       max        int      – cap on total gathered (0 = no cap).
 class_name MissionData
 extends Resource
 
@@ -49,3 +55,4 @@ extends Resource
 @export var decision_modes: Array[String]  # "self", "vote", "moderate"
 @export var outcomes: Array[Dictionary]  # id, condition, result_text, effects
 @export var comic_panels: Array[Dictionary]  # image, caption, character
+@export var gather: Dictionary = {}  # label, amount, cooldown, max

@@ -17,6 +17,8 @@ var mode: StringName = &"self"
 var state: StringName = STATE_INTRO
 var option_buttons: Dictionary = {}
 var characters_by_id: Dictionary = {}
+var gathered: int = 0
+var gather_cooldown: SceneTreeTimer = null
 var dialogue_indices: Dictionary = {}
 var listened_counts: Dictionary = {}
 var character_status_labels: Dictionary = {}
@@ -35,6 +37,7 @@ var character_status_labels: Dictionary = {}
 @onready var outcome_label: Label = %OutcomeLabel
 @onready var outcome_panel: Panel = %OutcomePanel
 @onready var comic_flow: VBoxContainer = %ComicFlow
+@onready var gather_button: Button = %GatherButton
 @onready var lichttropfen_label: Label = %LichttropfenLabel
 @onready var freundschaft_label: Label = %FreundschaftLabel
 @onready var mut_sterne_label: Label = %MutSterneLabel
@@ -73,15 +76,45 @@ func _build_ui() -> void:
 		option_buttons[option_id] = button
 	_build_characters()
 	_build_comic_flow()
+	_setup_gather()
 	_refresh_resources()
 	_refresh_confirm()
+
+
+func _setup_gather() -> void:
+	if mission.gather.is_empty():
+		gather_button.visible = false
+		return
+	var amount: int = int(mission.gather.get("amount", 0))
+	gather_button.text = "%s (+%d)" % [str(mission.gather.get("label", "Sammeln")), amount]
+	gather_button.visible = false
+
+
+func _on_gather_button_up() -> void:
+	if state != STATE_DECISION or gather_button.disabled:
+		return
+	var amount: int = int(mission.gather.get("amount", 0))
+	var max_gather: int = int(mission.gather.get("max", 0))
+	if max_gather > 0 and gathered >= max_gather:
+		gather_button.disabled = true
+		gather_button.text = "Berg-Licht ist für heute gesammelt"
+		return
+	gathered += amount
+	gather_button.disabled = true
+	var cooldown: float = float(mission.gather.get("cooldown", 1.0))
+	gather_cooldown = get_tree().create_timer(cooldown)
+	gather_cooldown.timeout.connect(func():
+		if state == STATE_DECISION and (max_gather <= 0 or gathered < max_gather):
+			gather_button.disabled = false
+	)
+	_refresh_resources()
 
 
 func _refresh_resources() -> void:
 	var spent: int = 0
 	for option_id: StringName in selected:
 		spent += int(costs.get(option_id, 0))
-	var remaining: int = mission.resource_pool - spent
+	var remaining: int = mission.resource_pool + gathered - spent
 	lichttropfen_label.text = "Lichttropfen: %d" % remaining
 	var freundschaft: int = 0
 	for value in SaveFile.mission_state.get("character_freundschaft", {}).values():
@@ -122,6 +155,7 @@ func _set_state(new_state: StringName) -> void:
 	mode_vote_button.visible = is_decision
 	mode_moderate_button.visible = is_decision
 	confirm_button.visible = is_decision
+	gather_button.visible = is_decision and not mission.gather.is_empty()
 	outcome_panel.visible = state == STATE_OUTCOME
 	_refresh_confirm()
 
@@ -240,7 +274,7 @@ func _refresh_confirm() -> void:
 			confirm_button.disabled = false
 		_:
 			confirm_button.disabled = not Decision.is_valid_self_choice(
-				selected, mission.resource_pool, costs
+				selected, mission.resource_pool + gathered, costs
 			)
 
 

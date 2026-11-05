@@ -89,6 +89,13 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="GatherButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Berg-Licht sammeln (+10)"
+disabled = true
+
 [node name="ModeHelpLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -197,5 +204,6 @@ autowrap_mode = 3
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeVoteButton" to="." method="_on_mode_vote_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ContinueButton" to="." method="_on_continue_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/GatherButton" to="." method="_on_gather_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ConfirmButton" to="." method="_on_confirm_button_up"]
 [connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/BackButton" to="." method="_on_back_button_up"]
