@@ -227,6 +227,15 @@ func _test_mission_state_persistence() -> void:
 		and legacy_state.get("unlocks", []).is_empty(),
 		"Legacy saves default to empty mission progress"
 	)
+	# JSON parses all numbers as floats; int fields must survive a disk round-trip.
+	var json_round_trip: Dictionary = JSON.parse_string(JSON.stringify(exported))
+	var json_restored: Dictionary = save_file.call("_get_mission_state", json_round_trip)
+	_check(
+		json_restored.get("mut_sterne") == 15
+		and json_restored.get("rhythmus") == 0
+		and json_restored.get("schatten_der_eile") == 1,
+		"Mission int counters survive JSON round-trip"
+	)
 	save_file.set("mission_state", original_state)
 
 

@@ -507,6 +507,16 @@ func _autosave(force: bool = false, silent: bool = false) -> void:
 	_write(file_name, save_data)
 
 
+func save_now() -> void:
+	if not Game.PARAMS["save_system_enabled"]:
+		return
+	_update_metadata()
+	var save_data: Dictionary = _export_save_data()
+	_write(active_file_name, save_data)
+	# _write only touches disk; keep the in-memory picker data in sync.
+	save_datas[active_file_name.trim_suffix(SAVE_FILE_EXTENSION)] = save_data
+
+
 func _get_seconds_since_last_autosave() -> int:
 	var now_time: Dictionary = Time.get_datetime_dict_from_system(true)
 	var last_time: Dictionary = metadata.get("last_utc_time", now_time)
@@ -605,10 +615,18 @@ func _get_mission_state(save_data: Dictionary) -> Dictionary:
 	for field: String in defaults:
 		if not stored_state.has(field):
 			continue
-		if typeof(stored_state[field]) != typeof(defaults[field]):
+		var value: Variant = stored_state[field]
+		var is_valid: bool = typeof(value) == typeof(defaults[field])
+		if not is_valid and typeof(defaults[field]) == TYPE_INT:
+			# JSON parses all numbers as floats; accept floats for int fields.
+			is_valid = typeof(value) == TYPE_FLOAT
+		if not is_valid:
 			push_warning("Ignoring invalid mission_state.%s in save data." % field)
 			continue
-		defaults[field] = stored_state[field]
+		if typeof(defaults[field]) == TYPE_INT:
+			defaults[field] = int(value)
+		else:
+			defaults[field] = value
 	return defaults
 
 
