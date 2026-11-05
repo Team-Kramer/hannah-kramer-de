@@ -12,7 +12,8 @@ characters = Array[Dictionary]([
 	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "can_vote": true, "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
 	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "can_vote": true, "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
 	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "can_vote": true, "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
-	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "can_vote": false, "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]}
+	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "can_vote": false, "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]},
+	{"id": &"lichtkatze", "name": &"Lichtkatze", "wish": &"", "mood": &"Sanft, leuchtend", "can_vote": false, "portrait": "res://assets/image/art/cat.png", "dialogs": ["Ich komme vom Bergkamm. Jeder Lichttropfen, den ihr gibt, leuchtet für alle.", "Hört in euch hinein. Die richtige Wahl ist die, bei der niemand zurückbleibt."]}
 ])
 resource_pool = 120
 options = Array[Dictionary]([

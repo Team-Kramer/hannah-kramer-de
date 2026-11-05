@@ -32,7 +32,7 @@ func _run_tests() -> void:
 
 func _test_mission_data(mission: MissionData) -> void:
 	_check(not mission.intro_text.strip_edges().is_empty(), "Mission 01 intro text loads")
-	_check(mission.characters.size() == 5, "Mission 01 has five characters")
+	_check(mission.characters.size() == 6, "Mission 01 has six characters (incl. Lichtkatze)")
 	_check(mission.resource_pool == 120, "Mission 01 pool is 120 Lichttropfen")
 	_check(mission.options.size() == 5, "Mission 01 has five options")
 	_check(mission.decision_modes.size() == 3, "Mission 01 supports three decision modes")

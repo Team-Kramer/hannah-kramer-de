@@ -30,7 +30,7 @@ static func validate(mission: MissionData) -> PackedStringArray:
 		else:
 			character_ids[character_id] = true
 
-		for field: String in ["name", "wish", "mood"]:
+		for field: String in ["name", "mood"]:
 			if str(character.get(field, "")).strip_edges().is_empty():
 				errors.append("Character %s needs a non-empty %s." % [character_id, field])
 		if typeof(character.get("can_vote", null)) != TYPE_BOOL:
@@ -72,8 +72,12 @@ static func validate(mission: MissionData) -> PackedStringArray:
 		errors.append("Mission must have at least three options.")
 
 	for character: Dictionary in mission.characters:
+		if not character.get("can_vote", false):
+			continue
 		var wish_id: StringName = StringName(str(character.get("wish", "")))
-		if not option_ids.has(wish_id):
+		if wish_id == &"":
+			errors.append("Voting character %s needs a wish." % character.get("id", ""))
+		elif not option_ids.has(wish_id):
 			errors.append("Character %s refers to unknown option %s." % [character.get("id", ""), wish_id])
 
 	var seen_modes: Dictionary = {}

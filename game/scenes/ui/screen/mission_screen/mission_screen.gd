@@ -144,12 +144,13 @@ func _disable_decision_controls() -> void:
 
 # TODO-IMG: replace with per-character portraits (see docs/asset-strip.md, Batch C)
 func _build_characters() -> void:
-	var portrait: Texture2D = load("res://assets/image/missions/char_portrait_placeholder.png")
+	var placeholder: Texture2D = load("res://assets/image/missions/char_portrait_placeholder.png")
 	for character: Dictionary in mission.characters:
 		var vbox: VBoxContainer = VBoxContainer.new()
 		var texture_rect: TextureRect = TextureRect.new()
 		texture_rect.custom_minimum_size = Vector2(72, 72)
-		texture_rect.texture = portrait
+		var portrait_path: String = str(character.get("portrait", ""))
+		texture_rect.texture = load(portrait_path) if portrait_path != "" else placeholder
 		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		var listen_button: Button = Button.new()
 		listen_button.custom_minimum_size = Vector2(112, 56)
