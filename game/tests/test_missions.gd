@@ -22,6 +22,7 @@ func _run_tests() -> void:
 		_test_outcomes()
 		_test_mission_state_persistence()
 		await _test_mission_screen()
+		await _test_resume()
 		_test_save_disk_round_trip()
 
 	if failures == 0:
@@ -252,6 +253,57 @@ func _test_mission_state_persistence() -> void:
 		"Mission int counters survive JSON round-trip"
 	)
 	save_file.set("mission_state", original_state)
+
+
+func _test_resume() -> void:
+	var save_file: Node = root.get_node_or_null("SaveFile")
+	_check(save_file != null, "SaveFile autoload is available for resume test")
+	if save_file == null:
+		return
+	var original_state: Dictionary = save_file.get("mission_state").duplicate(true)
+	# A completed mission with the middle outcome already applied.
+	save_file.set("mission_state", {
+		"completed": {"mission_spielplatz": {"outcome": "middle", "applied": "middle"}},
+		"unlocks": [],
+		"mut_sterne": 0,
+		"rhythmus": 0,
+		"schatten_der_eile": 1,
+		"character_freundschaft": {}
+	})
+
+	var packed_scene: PackedScene = load(MISSION_SCREEN_PATH) as PackedScene
+	var screen: Control = packed_scene.instantiate() as Control
+	root.add_child(screen)
+	await process_frame
+	_check(screen.get("state") == &"outcome", "Completed mission resumes to its outcome")
+	var outcome_label: Label = screen.get_node("%OutcomeLabel")
+	_check(
+		outcome_label.text.contains("Juan sitzt am Rand"),
+		"Resumed outcome shows the saved result text"
+	)
+	# Resuming must not re-apply the recorded outcome's effects.
+	_check(
+		int(save_file.get("mission_state").get("schatten_der_eile", 0)) == 1,
+		"Resuming does not re-apply the recorded outcome effects"
+	)
+
+	# Retry and complete again: effects must not apply a second time.
+	var retry_button: Button = screen.get_node("%RetryButton")
+	retry_button.emit_signal("pressed")
+	_check(screen.get("state") == &"decision", "Retry from a resumed outcome returns to decision")
+	var vote_button: Button = screen.get_node("%ModeVoteButton")
+	vote_button.emit_signal("pressed")
+	var confirm_button: Button = screen.get_node("%ConfirmButton")
+	confirm_button.emit_signal("pressed")
+	_check(
+		int(save_file.get("mission_state").get("schatten_der_eile", 0)) == 1,
+		"Replaying the same outcome does not apply its effects twice"
+	)
+
+	screen.queue_free()
+	await process_frame
+	save_file.set("mission_state", original_state)
+
 
 
 func _test_save_disk_round_trip() -> void:
