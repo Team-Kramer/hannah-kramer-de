@@ -1,0 +1,201 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/ui/screen/mission_screen/mission_screen.gd" id="1_mission"]
+[ext_resource type="Texture2D" path="res://assets/image/missions/spielplatz_01_start.png" id="2_scene"]
+
+[node name="MissionScreen" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mission")
+
+[node name="RootMarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="DiaryHBox" type="HBoxContainer" parent="RootMarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LeftPanel" type="PanelContainer" parent="RootMarginContainer/DiaryHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.1
+
+[node name="LeftVBox" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/LeftPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LeftTitle" type="Label" parent="RootMarginContainer/DiaryHBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Geschichtenfluss"
+
+[node name="ComicFlowScroll" type="ScrollContainer" parent="RootMarginContainer/DiaryHBox/LeftPanel/LeftVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ComicFlow" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/LeftPanel/LeftVBox/ComicFlowScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="MiddlePanel" type="PanelContainer" parent="RootMarginContainer/DiaryHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="MiddleVBox" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Der kaputte Spielplatz"
+
+[node name="IntroLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Intro"
+autowrap_mode = 3
+
+[node name="SceneTextureRect" type="TextureRect" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+texture = ExtResource("2_scene")
+expand_mode = 1
+
+[node name="ListenLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Wähle eine Figur, um ihre Idee zu hören."
+autowrap_mode = 3
+
+[node name="CharactersHBox" type="HBoxContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="OptionsFlow" type="FlowContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ModeHelpLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Du wählst eine oder zwei Ideen. Zusammen dürfen sie höchstens 120 Lichttropfen kosten."
+autowrap_mode = 3
+
+[node name="ModesHBoxContainer" type="HBoxContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ModeSelfButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Selbst entscheiden"
+
+[node name="ModeVoteButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Abstimmung"
+
+[node name="ModeModerateButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Moderieren"
+
+[node name="ConfirmButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Entscheidung treffen"
+
+[node name="BackButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Zurück"
+
+[node name="ContinueButton" type="Button" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Zu den Stimmen"
+
+[node name="OutcomePanel" type="Panel" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="OutcomeMarginContainer" type="MarginContainer" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="OutcomeLabel" type="Label" parent="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/OutcomePanel/OutcomeMarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Outcome"
+autowrap_mode = 3
+
+[node name="RightPanel" type="PanelContainer" parent="RootMarginContainer/DiaryHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
+
+[node name="RightVBox" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RightTitle" type="Label" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Ressourcen"
+
+[node name="ResourceTracker" type="VBoxContainer" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="LichttropfenLabel" type="Label" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox/ResourceTracker"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Lichttropfen: 120"
+autowrap_mode = 3
+
+[node name="FreundschaftLabel" type="Label" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox/ResourceTracker"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Freundschafts-Funken: 0"
+autowrap_mode = 3
+
+[node name="MutSterneLabel" type="Label" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox/ResourceTracker"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mut-Sterne: 0 (kommt später)"
+autowrap_mode = 3
+
+[node name="RhythmusLabel" type="Label" parent="RootMarginContainer/DiaryHBox/RightPanel/RightVBox/ResourceTracker"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Rhythmus-Noten: 0 (kommt später)"
+autowrap_mode = 3
+
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeSelfButton" to="." method="_on_mode_self_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeVoteButton" to="." method="_on_mode_vote_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ModesHBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ContinueButton" to="." method="_on_continue_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/ConfirmButton" to="." method="_on_confirm_button_up"]
+[connection signal="pressed" from="RootMarginContainer/DiaryHBox/MiddlePanel/MiddleVBox/BackButton" to="." method="_on_back_button_up"]
