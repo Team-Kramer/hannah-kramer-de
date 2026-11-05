@@ -77,13 +77,13 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 
 - [x] Connect the mission screen to MissionData; implement the intro → listening → decision → outcome state sequence and render each character's dialogue.
 - [x] Track which voices have been heard and make listening visible; replaying a line does not increase its vote weight, and listening is optional.
-- [ ] Implement **Self**: allow one or two options, reject choices whose total cost exceeds the pool, and explain an unavailable choice in child-friendly language.
-- [ ] Implement **Vote**: collect character wishes, calculate the documented vote weights, and apply the documented quiet-voice tie-break deterministically.
-- [ ] Implement **Moderate**: apply the documented compromise rule and Mut-Sterne cost; show the child how the result reflects more than one wish.
-- [ ] Keep all modes keyboard-operable and usable by touch; prevent double-submit and invalid/empty selections.
-- [ ] Evaluate the final built options against the documented outcomes: good (barrier-free option plus another), middle (partial/loudest-only result as defined by the source), and weak (including `alles_halb` or Juan being forgotten).
-- [ ] Apply outcome text and effects exactly once; verify resource changes and unlock state after completion.
-- [ ] Add a clear, gentle route from each outcome to continue, revisit, or retry without implying failure or blame.
+- [x] Implement **Self**: allow one or two options, reject choices whose total cost exceeds the pool, and explain an unavailable choice in child-friendly language.
+- [x] Implement **Vote**: collect character wishes, calculate the documented vote weights (fed from saved friendship), and apply the documented quiet-voice tie-break deterministically.
+- [ ] Implement **Moderate**: apply the documented compromise rule and Mut-Sterne cost; show the child how the result reflects more than one wish. *(Compromise rule applied; Mut-Sterne cost still to be charged.)*
+- [ ] Keep all modes keyboard-operable and usable by touch; prevent double-submit and invalid/empty selections. *(Double-submit/invalid prevented; keyboard-focus verification pending.)*
+- [x] Evaluate the final built options against the documented outcomes: good (barrier-free option plus another), middle (partial/loudest-only result as defined by the source), and weak (including `alles_halb` or Juan being forgotten).
+- [ ] Apply outcome text and effects exactly once; verify resource changes and unlock state after completion. *(Effects applied once; unlock persistence pending.)*
+- [x] Add a clear, gentle route from each outcome to continue, revisit, or retry without implying failure or blame.
 
 **Exit check:** a player can complete the Mission 01 loop from intro to outcome using each supported decision mode.
 
@@ -94,11 +94,11 @@ The existence of a file is not proof that its behavior is complete. Confirm each
 **Concept:** `docs/concept-diary-comic.md`. The mission screen becomes a **diary** with three panels matching the reference screenshot: **left = comic story flow** (cartoon panels + subtext, TTS later), **middle = location screen** (gather + decisions + dialogs), **right = gathered resources**.
 
 - [x] Build the 3-panel diary layout in `mission_screen_diary.tscn` (left ~45%, middle ~40%, right ~15% of the 960×540 viewport) and re-architect `mission_screen.gd` to drive it.
-- [x] **Left — comic flow:** a vertical, scrollable flow of comic panels; each panel = cartoon image (described in text now, generated later) + subtext; current panel auto-scrolls into view; the Bergkamm is a recurring backdrop.
-- [ ] **Middle — location screen:** location scene (Spielplatz for Mission 01) + resource-gathering cooldown buttons (GodotProjectZero `progress_button` + `resource_generator`) + decisions (Self/Vote/Moderate) + dialogs (`npc_dialog`).
+- [x] **Left — comic flow:** a vertical, scrollable flow of comic panels; each panel = cartoon image (described in text now, generated later) + subtext; current panel auto-scrolls into view; the Bergkamm is a recurring backdrop. The outcome is appended as a new comic panel (`comic_caption`) and the flow auto-scrolls to it.
+- [x] **Middle — location screen:** location scene (Spielplatz for Mission 01) + resource-gathering cooldown buttons (lightweight self-contained gather button; the GodotProjectZero `progress_button`/`resource_generator` are not portable without a `Game` autoload) + decisions (Self/Vote/Moderate) + dialogs (`npc_dialog`).
 - [x] **Right — resources:** `resource_tracker` showing Lichttropfen (active) + Freundschafts-Funken (active) + Mut-Sterne / Rhythmus-Noten (dormant, "kommt später" hint).
 - [x] **Lichtkatze:** the cat guide appears from the Bergkamm direction, talks via `npc_dialog`, frames the decision, and offers the compromise (Moderate) option; uses `game/assets/image/art/cat.png`.
-- [ ] **Friendship tracking:** per-kid + Lichtkatze Freundschafts-Funken; decisions adjust friendship (gentle, non-punitive); feeds vote weight `1 + 0.1 × Freundschaft`; later outcomes branch on friendship level.
+- [x] **Friendship tracking:** per-kid + Lichtkatze Freundschafts-Funken; decisions adjust friendship (gentle, non-punitive); feeds vote weight `1 + 0.1 × Freundschaft`. *(Later outcomes branching on friendship level is a later-story item.)*
 - [x] **Reduced resources in story 1:** only Lichttropfen + Freundschafts-Funken active; Mut-Sterne / Rhythmus-Noten dormant (shown, not required).
 - [x] Extend `MissionData` with `comic_panels` (left flow) and `location` (middle) fields; keep the existing character/option/outcome fields.
 - [ ] Apply the indigo/cream/gold palette and Nunito typography consistently; use gold as a focused interaction/feedback accent rather than a global fill.
