@@ -79,6 +79,11 @@ func _run() -> void:
 	fixture_root = user_args[0].simplify_path() if not user_args.is_empty() else \
 		ProjectSettings.globalize_path("res://").path_join("../../fixtures/spielplatz_demo").simplify_path()
 
+	if user_args.has("--compare"):
+		_test_workbench_comparison()
+		_finish()
+		return
+
 	var manifest_result := _read_json("manifest.json")
 	_expect(manifest_result.ok, "manifest parses")
 	if not manifest_result.ok:
@@ -586,6 +591,18 @@ func _test_package_reloader() -> void:
 
 	DirAccess.remove_absolute(valid_dir)
 	DirAccess.remove_absolute(broken_dir)
+
+
+# Prints the Godot validator's ok/error messages for the package in fixture_root
+# so the Node workbench validator can be diffed against it (Phase D gate).
+func _test_workbench_comparison() -> void:
+	var result: Dictionary = PackageLoader.load_package(fixture_root)
+	for message in result["messages"]:
+		if message["level"] == "ok":
+			print("GODOT_OK|%s" % message["text"])
+		elif message["level"] == "error":
+			print("GODOT_ERR|%s" % message["text"])
+	print("GODOT_COMPARE_DONE")
 
 
 func _copy_dir_recursive(src: String, dst: String) -> void:

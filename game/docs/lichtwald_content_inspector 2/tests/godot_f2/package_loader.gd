@@ -34,6 +34,9 @@ static func load_package(dir: String) -> Dictionary:
 	var manifest: Variant = _read_json(dir.path_join(MANIFEST_NAME), messages)
 	if manifest == null:
 		return { "ok": false, "messages": messages, "catalog": {}, "documents": {}, "assembled": {} }
+	# PB-02d: Godot's JSON parser widens integral numbers to floats; the
+	# manifest is canonicalized too so schemaVersion prints/compares as int.
+	manifest = canonicalize_numeric_types(manifest)
 	_add(messages, "ok", "Manifest present (packId=%s, schema=%s)" % [
 		str(manifest.get("packId", "?")), str(manifest.get("schemaVersion", "?"))
 	])
