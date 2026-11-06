@@ -16,7 +16,7 @@ Use the stable IDs below when reporting progress or changing scope. A task is co
 | Phase | Status | Depends on | Exit evidence |
 |---|---|---|---|
 | A — Baseline map | [x] | None | Source inventory, F0 trace, and explicit family/exception dispositions |
-| B — JSON/flow feasibility | [/] | A | F1–F6 results and reviewed schema/flow decisions |
+| B — JSON/flow feasibility | [x] | A | F1–F6 automated results pass and PB-02a–g schema/flow decisions recorded; F1 unfamiliar-human edit gate remains open in §5.7/PC-01b |
 | C — Standalone graphical workbench | [/] | B | F7–F8 results and standalone workbench gate |
 | D — JSON runtime loader | [ ] | C | Same valid package accepted by workbench and loaded by game |
 | E — Rule migration | [ ] | D | F9 parity evidence; migrated branches removed safely |
@@ -878,12 +878,22 @@ This plan does not itself execute later phases. Each phase starts only after the
 
 ### Phase B — Run JSON, graph, event, and state feasibility tests
 
-- [/] **PB-01** Complete F1–F6 in order using only the small fixture and throwaway prototypes. **Evidence:** F1 fixture checks pass; F1 editor usability review and F2–F6 remain pending.
-- [ ] **PB-02** Record and resolve design changes to file boundaries, references, condition/effect DSL, event ordering, and story-run state exposed by tests.
+- [x] **PB-01** Complete F1–F6 in order using only the small fixture and throwaway prototypes. **Evidence:** F1 package-contract checks, F2 Godot round-trip, F3 reference graph, F4 event rules, F5 trace/parity, and F6 story-resume all pass (see §5.7). The F1 *unfamiliar-human* editor-usability review remains an open human gate in §5.7 (and Phase C PC-01b) and does not block the automated F1–F6 gate.
+- [x] **PB-02** Record and resolve design changes to file boundaries, references, condition/effect DSL, event ordering, and story-run state exposed by tests. **Evidence:** decisions PB-02a–g recorded below (2026-11-06).
 - [ ] **PB-03** Keep tests isolated: do not migrate production content or delete existing code.
 
+#### PB-02 decisions (recorded 2026-11-06)
+
+- **PB-02a — File boundaries (confirmed).** The 9-file manifest layout is the package contract: `locations.json`, `resources.json`, `rules.json`, `combat.json`, `assets.json`, `stories/*.json`, `npcs/*.json`, `locales/*.json`. Each domain file is the single editable source for its domain; after migration there is no parallel `.tres` source for the same domain.
+- **PB-02b — Condition DSL (canonical op set).** `eq, ne, gt, gte, lt, lte, exists, not`. The canonical spelling is **`ne`** (matches the F4 runtime and §6); the workbench `schema.js` allow-list currently lists `neq`, which is a bug to reconcile to `ne`. `exists` and `not` are structural ops present in the workbench/contract; the F4 prototype exercised the six comparison ops and the loader must accept all eight.
+- **PB-02c — Effect DSL (canonical op set).** `resource.add, resource.spend, relationship.adjust, unlock, flag.set, event.record, combat.request`. Both `event.record` (workbench/§6) and `combat.request` (F4 runtime) are valid; the canonical allow-list is their union of seven ops. The workbench `schema.js` `ALLOWED_EFFECTS` is missing `combat.request` and must add it.
+- **PB-02d — Float→int canonicalization (F2 rule).** Godot JSON parse/serialize can turn integral numbers into floats. Loader rule: safe integral floats (e.g. `2.0`) canonicalize to integers (`2`); non-integral values for integer-typed fields are rejected with a path-specific diagnostic.
+- **PB-02e — Event ordering / signal reconciliation.** The F5 prototype ordering is explicit: resource state is updated before rule evaluation, rules run in JSON array order, and later rules observe earlier effects. Legacy F0 emitted unlock/event signals *before* its `resource_updated` observation. This ordering difference is a **required reconciliation item before production migration (Phase E)**; it does not block the Phase D loader.
+- **PB-02f — Story-run state (F6).** A compact per-story state machine is sufficient: current story/dialogue node, pending input, visit history, applied outcome IDs, and input IDs. No workflow engine is justified by the evidence.
+- **PB-02g — Text-key + asset convention.** Canonical entity fields use locale text keys (`nameKey`, `displayNameKey`, `captionKey`, `titleKey`) resolved through `locales/*.json`, plus explicit asset references (`iconAssetId`, `portraitAssetId`, `illustration.assetId`). The workbench `createEmptyEntity` templates currently emit inline `displayName: {de,en}` objects, which is a mismatch to reconcile to the text-key convention (PD-01).
+
 **Gate:** JSON round-trips safely; references build the intended cross-domain graph; event rules reproduce the selected legacy trace; a branched story resumes and applies effects once.  
-**Evidence:** F1–F6 fixture, test results, and decisions: `TBD`.
+**Evidence:** F1–F6 fixture and test results in §5.7 (all automated checks pass); PB-02a–g decisions recorded above. PB-03 (test isolation) is standing policy; the F1 unfamiliar-human edit gate remains open in §5.7, and F7/F8 human gates are tracked in Phase C (PC-01b).
 
 ### Phase C — Complete and evaluate the standalone graphical JSON authoring workbench
 
