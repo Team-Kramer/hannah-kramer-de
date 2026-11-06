@@ -141,7 +141,6 @@ func _handle_land_event(observed_id: String) -> void:
 	if ResourceManager.get_total_generated(observed_id) >= 4 + 1:
 		_trigger_unique_unlock_event("land_4")
 		_unlock_resource_generator_if("axe")
-		_gift_debug()
 	if ResourceManager.get_total_generated(observed_id) >= 5 + 1:
 		_trigger_unique_unlock_event("land_5")
 		_unlock_resource_generator_if("pickaxe")
@@ -328,20 +327,6 @@ func _play_sfx_unlock() -> void:
 func _gift_resource(gen_id: String, amount: int, source_id: String) -> void:
 	if amount != 0:
 		SignalBus.resource_generated.emit(gen_id, amount, source_id)
-
-
-func _gift_debug() -> void:
-	if Game.PARAMS["debug_gift"]:
-		if _trigger_unique_unlock_event("land_debug"):
-			_gift_resource("food", 1000, name)
-			_gift_resource("wood", 1000, name)
-			_gift_resource("stone", 1000, name)
-			_gift_resource("clay", 1000, name)
-			_gift_resource("brick", 1000, name)
-			_gift_resource("fiber", 1000, name)
-			_gift_resource("flint", 1000, name)
-			_gift_resource("fur", 1000, name)
-			_gift_resource("leather", 1000, name)
 
 
 ## ... except peasant, swordsman, house, torch, sword
