@@ -61,6 +61,7 @@ class ResourceDefinition:
 
 
 const MAX_SAFE_INTEGER := 9007199254740991.0
+const PackageLoader := preload("res://package_loader.gd")
 
 var failures: Array[String] = []
 var fixture_root: String
@@ -98,6 +99,9 @@ func _run() -> void:
 		_test_json_round_trip(documents, typed_documents)
 		_test_invalid_diagnostic()
 		_test_unicode_and_optional_values(documents)
+		_test_package_contract()
+		_test_package_contract_rejects_broken_package()
+		_test_numeric_canonicalization()
 
 	_finish()
 
@@ -332,6 +336,88 @@ func _test_unicode_and_optional_values(documents: Dictionary) -> void:
 	_expect(producer.has("maxUses") and producer["maxUses"] == null, "optional null maxUses survives")
 	_expect(documents["resources.json"]["workerRoles"].is_empty(), "empty entity arrays survive")
 	_expect(documents["resources.json"]["recipes"][0]["outputs"]["lichttropfen"] == 1, "integer output boundary survives")
+
+
+func _test_package_contract() -> void:
+	var result: Dictionary = PackageLoader.load_package(fixture_root)
+	_expect(result.ok, "Godot package loader validates the canonical fixture")
+	if not result.ok:
+		for message in result["messages"]:
+			if message["level"] == "error":
+				print("  contract error: %s" % message["text"])
+	var catalog: Dictionary = result["catalog"]
+	_expect(catalog["resource"].has("holz") and catalog["resource"].has("lichttropfen"), "catalog registers canonical resources")
+	_expect(catalog["npc"].has("juan") and catalog["conversation"].has("juan_playground"), "catalog registers NPC and conversation")
+	_expect(catalog["story"].has("story_spielplatz"), "catalog registers the story id")
+	_expect(catalog["encounter"].has("playground_shadow") and catalog["enemy"].has("knotted_shadow"), "catalog registers combat entities")
+	var passed := false
+	for message in result["messages"]:
+		if message["level"] == "ok" and message["text"].contains("Structural and cross-domain validation passed"):
+			passed = true
+	_expect(passed, "loader reports structural and cross-domain validation passed")
+
+
+func _test_package_contract_rejects_broken_package() -> void:
+	var temp_dir := DirAccess.make_dir_recursive_absolute(
+		"user://f2_broken_package"
+	)
+	_expect(temp_dir == OK, "broken-package temp dir created")
+	_write_broken_package("user://f2_broken_package")
+	var result: Dictionary = PackageLoader.load_package("user://f2_broken_package")
+	_expect(not result.ok, "broken package is rejected by the Godot loader")
+	var error_text := ""
+	for message in result["messages"]:
+		if message["level"] == "error":
+			error_text += message["text"] + "\n"
+	_expect(error_text.contains("references unknown resource"), "broken package reports the unknown resource reference")
+	_expect(error_text.contains("missing text key"), "broken package reports the missing text key")
+	DirAccess.remove_absolute("user://f2_broken_package")
+
+
+func _write_broken_package(dir: String) -> void:
+	var manifest := {
+		"schemaVersion": 1,
+		"packId": "broken",
+		"files": ["resources.json", "locales/de.json"],
+	}
+	_write_json(dir.path_join("manifest.json"), manifest)
+	# Recipe references a resource id that is not registered.
+	_write_json(dir.path_join("resources.json"), {
+		"schemaVersion": 1,
+		"packId": "broken",
+		"resources": [
+			{"id": "holz", "kind": "stock", "nameKey": "resource.holz.name", "iconAssetId": "resource_holz", "initialAmount": 0, "bounds": {"min": 0, "max": 999}}
+		],
+		"producers": [],
+		"recipes": [
+			{"id": "make_lichttropfen", "locationId": "lichtwald_spielplatz", "inputs": {"holz": 2}, "outputs": {"lichttropfen": 1}}
+		],
+		"workerRoles": []
+	})
+	# Locale is missing the resource name key referenced above.
+	DirAccess.make_dir_recursive_absolute(dir.path_join("locales"))
+	_write_json(dir.path_join("locales/de.json"), {
+		"schemaVersion": 1,
+		"packId": "broken",
+		"locale": "de",
+		"strings": {}
+	})
+
+
+func _write_json(path: String, value: Variant) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(value))
+	file.close()
+
+
+func _test_numeric_canonicalization() -> void:
+	# Godot's JSON round-trip can widen integral numbers to floats (PB-02d).
+	var widened: Dictionary = {"initialAmount": 3.0, "nested": {"bounds": {"min": 0.0, "max": 999.0}}, "ratio": 0.5}
+	var canonical: Variant = PackageLoader.canonicalize_numeric_types(widened)
+	_expect(typeof(canonical["initialAmount"]) == TYPE_INT, "integral float initialAmount canonicalized to int")
+	_expect(typeof(canonical["nested"]["bounds"]["min"]) == TYPE_INT, "integral float bounds.min canonicalized to int")
+	_expect(typeof(canonical["nested"]["bounds"]["max"]) == TYPE_INT, "integral float bounds.max canonicalized to int")
+	_expect(typeof(canonical["ratio"]) == TYPE_FLOAT, "non-integral float is preserved")
 
 
 func _expect(condition: bool, message: String) -> void:
