@@ -64,6 +64,7 @@ const MAX_SAFE_INTEGER := 9007199254740991.0
 const PackageLoader := preload("res://package_loader.gd")
 const ConditionDsl := preload("res://condition_dsl.gd")
 const EventEngine := preload("res://event_engine.gd")
+const PackageReloader := preload("res://package_reloader.gd")
 
 var failures: Array[String] = []
 var fixture_root: String
@@ -106,6 +107,7 @@ func _run() -> void:
 		_test_numeric_canonicalization()
 		_test_condition_dsl()
 		_test_event_engine()
+		_test_package_reloader()
 
 	_finish()
 
@@ -547,6 +549,64 @@ func _test_event_engine() -> void:
 	)
 	_expect(no_match.get("ok", true) and no_match.get("firedRuleIds").is_empty(), "engine no-match event fires no rules")
 	_expect(state["resources"]["lichttropfen"] == 1, "engine applied the no-match delta")
+
+
+func _test_package_reloader() -> void:
+	var valid_dir := "user://f2_reload_valid"
+	var broken_dir := "user://f2_reload_broken"
+	DirAccess.remove_absolute(valid_dir)
+	DirAccess.remove_absolute(broken_dir)
+	_copy_dir_recursive(fixture_root, valid_dir)
+	_copy_dir_recursive(fixture_root, broken_dir)
+	_break_package_resources(broken_dir)
+
+	var reloader: PackageReloader = PackageReloader.new()
+	_expect(not reloader.has_active_package(), "reloader starts with no active package")
+
+	var first: Dictionary = reloader.load(valid_dir)
+	_expect(first.ok and first.reloaded, "reloader initial load activates a valid package")
+	_expect(reloader.has_active_package(), "reloader reports an active package after load")
+	_expect(reloader.current() is Dictionary and not reloader.current().is_empty(), "reloader serves the active package")
+
+	var second: Dictionary = reloader.reload(valid_dir)
+	_expect(second.ok and second.reloaded, "reloader accepts a valid reload")
+
+	var broken: Dictionary = reloader.reload(broken_dir)
+	_expect(not broken.ok, "reloader rejects an invalid reload")
+	_expect(broken.keptLastValid, "reloader keeps the last valid package on invalid reload")
+	_expect(reloader.current() is Dictionary and not reloader.current().is_empty(), "reloader still serves the last valid package")
+	var error_text := ""
+	for message in broken["messages"]:
+		if message["level"] == "error":
+			error_text += message["text"] + "\n"
+	_expect(error_text.contains("unknown resource"), "invalid reload reports the validation error")
+
+	var recovered: Dictionary = reloader.reload(valid_dir)
+	_expect(recovered.ok and recovered.reloaded, "reloader recovers on the next valid reload")
+
+	DirAccess.remove_absolute(valid_dir)
+	DirAccess.remove_absolute(broken_dir)
+
+
+func _copy_dir_recursive(src: String, dst: String) -> void:
+	DirAccess.make_dir_recursive_absolute(dst)
+	var dir := DirAccess.open(src)
+	for sub in dir.get_directories():
+		_copy_dir_recursive(src.path_join(sub), dst.path_join(sub))
+	for entry in dir.get_files():
+		DirAccess.copy_absolute(src.path_join(entry), dst.path_join(entry))
+
+
+func _break_package_resources(dir: String) -> void:
+	var path := dir.path_join("resources.json")
+	var parser := JSON.new()
+	parser.parse(FileAccess.get_file_as_string(path))
+	var doc: Dictionary = parser.data
+	for recipe in doc.get("recipes", []):
+		recipe["inputs"] = {"unknown_resource": 1}
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(doc))
+	file.close()
 
 
 func _expect(condition: bool, message: String) -> void:
