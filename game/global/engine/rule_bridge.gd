@@ -46,7 +46,34 @@ func load_package(dir: String) -> void:
 	_rules = _pkg.get("rules", {}).get("rules", [])
 	_state = EventEngine.initial_state(_pkg)
 	_loaded = true
+	_register_package_resources(_pkg)
 	print("RuleBridge: loaded package '%s' (%d rules)" % [str(_pkg.get("manifest", {}).get("packId", "")), _rules.size()])
+
+
+## Registers package resources in the core-loop catalog and seeds their
+## initial amounts so the JSON resources are visible in the tracker and
+## usable by the ResourceManager.
+func _register_package_resources(pkg: Dictionary) -> void:
+	var resources_doc: Dictionary = pkg.get("resources", {})
+	var resource_list: Array = resources_doc.get("resources", [])
+	var sort_base: int = 10000
+	for entry in resource_list:
+		var id: String = str(entry.get("id", ""))
+		if id == "":
+			continue
+		if not Resources.resource_generators.has(id):
+			var generator: ResourceGenerator = ResourceGenerator.new()
+			generator.id = id
+			var bounds: Dictionary = entry.get("bounds", {})
+			generator.max_amount = int(bounds.get("max", -1))
+			generator.hidden = false
+			generator.sort_value = sort_base
+			sort_base += 1
+			Resources.resource_generators[id] = generator
+		if not SaveFile.resources.has(id):
+			var initial: int = int(entry.get("initialAmount", 0))
+			SaveFile.resources[id] = initial
+			SignalBus.resource_updated.emit(id, initial, initial, "rule_bridge")
 
 
 func _on_resource_updated(id: String, total: int, amount: int, _source_id: String) -> void:

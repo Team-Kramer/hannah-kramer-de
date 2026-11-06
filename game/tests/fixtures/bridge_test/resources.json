@@ -10,9 +10,9 @@
       "bounds": { "min": 0, "max": 999 }
     },
     {
-      "id": "lichttropfen",
+      "id": "testglanz",
       "kind": "stock",
-      "nameKey": "resource.lichttropfen.name",
+      "nameKey": "resource.testglanz.name",
       "initialAmount": 0,
       "bounds": { "min": 0 }
     }

@@ -72,6 +72,8 @@ func _on_resource_generated(id: String, amount: int, source_id: String) -> void:
 
 
 static func is_max_amount_reached(id: String) -> bool:
+	if not Resources.resource_generators.has(id):
+		return false
 	var resource_generator: ResourceGenerator = Resources.resource_generators[id]
 	var max_amount: int = resource_generator.max_amount
 	return max_amount > -1 and SaveFile.resources.get(id, 0) >= max_amount

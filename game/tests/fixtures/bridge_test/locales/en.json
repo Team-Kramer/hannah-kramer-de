@@ -5,7 +5,7 @@
   "strings": {
     "location.test_clearing.name": "Test Clearing",
     "resource.stein.name": "Stone",
-    "resource.lichttropfen.name": "Lightdrop",
+    "resource.testglanz.name": "Lightdrop",
     "npc.mira.name": "Mira",
     "conversation.mira_talk.n1.text": "Hello! Can you help me?",
     "conversation.mira_talk.n1.c1.label": "Sure!",

@@ -351,6 +351,9 @@ resource_generator_display_name:worker,[noun] an in-game resource,Peasant,Peasan
 resource_generator_display_name:soulstone,[noun] an in-game resource,Soulstone,Soulstone
 resource_generator_display_name:singularity,[noun] an in-game resource,Singularity,Singularity
 resource_generator_display_name:soul,[noun] an in-game resource,Soul,Soul
+resource_generator_display_name:lichttropfen,[noun] an in-game resource,Light Drops,Lichttropfen
+resource_generator_display_name:mut_sterne,[noun] an in-game resource,Courage Stars,Mut-Sterne
+resource_generator_display_name:freundschaft,[noun] an in-game resource,Friendship,Freundschaft
 worker_role_title:clay_digger,work profession / in-game job category,Clay Digger,Clay Digger
 worker_role_title:coal_miner,work profession / in-game job category,Coal Miner,Coal Miner
 worker_role_title:experience,work profession / in-game job category,Experience,Experience

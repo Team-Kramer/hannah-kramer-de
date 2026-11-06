@@ -18,6 +18,7 @@ var failures: int = 0
 var bridge: Node = null
 var save_file: Node = null
 var signal_bus: Node = null
+var resources: Node = null
 
 var progress_button_unlocks: int = 0
 var manager_button_unlocks: int = 0
@@ -33,9 +34,11 @@ func _initialize() -> void:
 func _run_tests() -> void:
 	save_file = root.get_node_or_null("SaveFile")
 	signal_bus = root.get_node_or_null("SignalBus")
+	resources = root.get_node_or_null("Resources")
 	_check(save_file != null, "SaveFile autoload is available")
 	_check(signal_bus != null, "SignalBus autoload is available")
-	if save_file == null or signal_bus == null:
+	_check(resources != null, "Resources autoload is available")
+	if save_file == null or signal_bus == null or resources == null:
 		_finish()
 		return
 
@@ -56,11 +59,26 @@ func _run_tests() -> void:
 	signal_bus.connect("tab_unlock", _on_tab_unlock)
 	signal_bus.connect("event_triggered", _on_event_triggered)
 
+	_test_resource_registration()
 	_test_resource_rule()
 	_test_npc_choice_rule()
 	_test_guards()
 
 	_finish()
+
+
+## load_package must register the fixture resources in the core-loop catalog
+## and seed their initial amounts so they are visible in the tracker.
+func _test_resource_registration() -> void:
+	var generators: Dictionary = resources.get("resource_generators")
+	_check(generators.has("stein"), "stein is registered in the core-loop catalog")
+	_check(generators.has("testglanz"), "testglanz is registered in the core-loop catalog")
+	if generators.has("stein"):
+		_check(int(generators["stein"].max_amount) == 999, "stein max_amount comes from bounds.max")
+	if generators.has("testglanz"):
+		_check(int(generators["testglanz"].max_amount) == -1, "testglanz max_amount defaults to -1 without bounds.max")
+	_check(int(save_file.resources.get("stein", -1)) == 0, "stein initial amount is seeded into SaveFile")
+	_check(int(save_file.resources.get("testglanz", -1)) == 0, "testglanz initial amount is seeded into SaveFile")
 
 
 ## resource_updated(stein, 1, 1) must fire rule r1: producer unlock,
