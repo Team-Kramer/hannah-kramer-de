@@ -18,5 +18,6 @@
     "npcs/schatten_der_eile.json",
     "locales/de.json",
     "locales/en.json"
-  ]
+  ],
+  "contentVersion": "lichtwald-mission01-1"
 }
