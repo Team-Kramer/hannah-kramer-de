@@ -62,6 +62,7 @@ class ResourceDefinition:
 
 const MAX_SAFE_INTEGER := 9007199254740991.0
 const PackageLoader := preload("res://package_loader.gd")
+const ConditionDsl := preload("res://condition_dsl.gd")
 
 var failures: Array[String] = []
 var fixture_root: String
@@ -102,6 +103,7 @@ func _run() -> void:
 		_test_package_contract()
 		_test_package_contract_rejects_broken_package()
 		_test_numeric_canonicalization()
+		_test_condition_dsl()
 
 	_finish()
 
@@ -418,6 +420,56 @@ func _test_numeric_canonicalization() -> void:
 	_expect(typeof(canonical["nested"]["bounds"]["min"]) == TYPE_INT, "integral float bounds.min canonicalized to int")
 	_expect(typeof(canonical["nested"]["bounds"]["max"]) == TYPE_INT, "integral float bounds.max canonicalized to int")
 	_expect(typeof(canonical["ratio"]) == TYPE_FLOAT, "non-integral float is preserved")
+
+
+func _test_condition_dsl() -> void:
+	var result: Dictionary = PackageLoader.load_package(fixture_root)
+	if not result.ok:
+		_expect(false, "condition DSL: fixture package loads")
+		return
+	var catalog: Dictionary = result["catalog"]
+
+	# Allow-listed + registered paths validate; unknown scopes/IDs do not.
+	_expect(ConditionDsl.validate_condition_path("resources.holz", catalog)["ok"], "DSL validates resources.holz")
+	_expect(ConditionDsl.validate_condition_path("relationships.juan", catalog)["ok"], "DSL validates relationships.juan")
+	_expect(ConditionDsl.validate_condition_path("flags.juan_listened", catalog)["ok"], "DSL validates flags (no registration)")
+	_expect(ConditionDsl.validate_condition_path("story.visited.opening", catalog)["ok"], "DSL validates story.visited.opening")
+	_expect(ConditionDsl.validate_condition_path("unlocks.recipes.make_lichttropfen", catalog)["ok"], "DSL validates unlocks.recipes")
+	_expect(ConditionDsl.validate_condition_path("unlocks.combatEncounters.playground_shadow", catalog)["ok"], "DSL validates unlocks.combatEncounters")
+	_expect(not ConditionDsl.validate_condition_path("resources.unknown", catalog)["ok"], "DSL rejects unregistered resource id")
+	_expect(not ConditionDsl.validate_condition_path("unlocks.unknownScope.make_lichttropfen", catalog)["ok"], "DSL rejects unknown unlock scope")
+	_expect(not ConditionDsl.validate_condition_path("score.holz", catalog)["ok"], "DSL rejects non-allow-listed scope")
+	_expect(not ConditionDsl.validate_condition_path(42, catalog)["ok"], "DSL rejects non-string path")
+
+	# read_condition_path: strict read with type check.
+	var state: Dictionary = {
+		"resources": {"holz": 2, "lichttropfen": 0},
+		"relationships": {"juan": 1},
+		"flags": {"juan_listened": true},
+		"story": {"visited": {"opening": true}},
+		"unlocks": {"recipes": {"make_lichttropfen": false}},
+	}
+	var read: Dictionary = ConditionDsl.read_condition_path("resources.holz", state, catalog)
+	_expect(read["ok"] and read["value"] == 2, "DSL reads resources.holz == 2")
+	_expect(not ConditionDsl.read_condition_path("flags.missing_flag", state, catalog)["ok"], "DSL read fails on missing field")
+	_expect(ConditionDsl.read_condition_path("unlocks.recipes.make_lichttropfen", state, catalog)["value"] == false, "DSL reads present unlock entry (false)")
+	_expect(not ConditionDsl.read_condition_path("unlocks.combatEncounters.playground_shadow", state, catalog)["ok"], "DSL read fails on missing unlock entry")
+
+	# exists: presence only, missing field is false (not an error).
+	_expect(ConditionDsl.condition_path_exists("flags.juan_listened", state, catalog)["value"] == true, "DSL exists true for present flag")
+	_expect(ConditionDsl.condition_path_exists("flags.missing_flag", state, catalog)["value"] == false, "DSL exists false for missing flag")
+	_expect(ConditionDsl.condition_path_exists("unlocks.recipes.make_lichttropfen", state, catalog)["value"] == true, "DSL exists true for present unlock entry")
+
+	# compare_condition_value: canonical operator set.
+	_expect(ConditionDsl.compare_condition_value(2, "eq", 2)["value"] == true, "DSL eq 2==2")
+	_expect(ConditionDsl.compare_condition_value(2, "ne", 3)["value"] == true, "DSL ne 2!=3")
+	_expect(ConditionDsl.compare_condition_value(3, "gt", 2)["value"] == true, "DSL gt 3>2")
+	_expect(ConditionDsl.compare_condition_value(2, "gte", 2)["value"] == true, "DSL gte 2>=2")
+	_expect(ConditionDsl.compare_condition_value(1, "lt", 2)["value"] == true, "DSL lt 1<2")
+	_expect(ConditionDsl.compare_condition_value(2, "lte", 2)["value"] == true, "DSL lte 2<=2")
+	_expect(ConditionDsl.compare_condition_value(2.0, "eq", 2)["value"] == true, "DSL eq treats 2.0 == 2 numerically")
+	_expect(ConditionDsl.compare_condition_value(2, "eq", true)["value"] == false, "DSL eq is strict across number/bool")
+	_expect(not ConditionDsl.compare_condition_value(2, "neq", 3)["ok"], "DSL rejects non-canonical op spelling")
 
 
 func _expect(condition: bool, message: String) -> void:

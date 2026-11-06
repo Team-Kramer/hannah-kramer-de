@@ -145,8 +145,15 @@ static func _build_catalogs(pkg: Dictionary, messages: Array[Dictionary]) -> Dic
 	var assets := _as_array(pkg["assets"].get("assets"))
 	var stories: Dictionary = pkg["stories"]
 	var story_set: Dictionary = {}
+	var story_node_set: Dictionary = {}
 	for story_id in stories.keys():
 		story_set[str(story_id)] = true
+		var story_doc: Variant = stories[story_id]
+		if story_doc is Dictionary and (story_doc as Dictionary).get("story") is Dictionary:
+			var story: Dictionary = (story_doc as Dictionary)["story"]
+			for node in _as_array(story.get("nodes")):
+				if node is Dictionary and node.get("id") is String and str(node.get("id")) != "":
+					story_node_set[str(node.get("id"))] = true
 	var npcs: Dictionary = pkg["npcs"]
 	var npcs_flat: Array = []
 	var conversations_flat: Array = []
@@ -167,6 +174,7 @@ static func _build_catalogs(pkg: Dictionary, messages: Array[Dictionary]) -> Dic
 		"encounter": _id_set(encounters),
 		"asset": _id_set(assets),
 		"story": story_set,
+		"storyNode": story_node_set,
 		"npc": _id_set(npcs_flat),
 		"conversation": _id_set(conversations_flat),
 	}
