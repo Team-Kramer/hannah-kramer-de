@@ -591,7 +591,7 @@ function describeRuleCondition(condition) {
   if (typeof condition.path === "string" && typeof condition.op === "string") {
     if (condition.op === "exists") return `${condition.path} exists`;
     if (condition.op === "not") return `${condition.path} is false`;
-    const operators = { eq: "=", neq: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
+    const operators = { eq: "=", ne: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
     const operator = operators[condition.op];
     if (operator) return `${condition.path} ${operator} ${JSON.stringify(condition.value)}`;
   }
@@ -1141,8 +1141,7 @@ function evaluatePreviewCondition(condition) {
   if (actual === undefined || typeof condition.value !== typeof actual) return { known: false };
   switch (condition.op) {
     case "eq": return { known: true, available: actual === condition.value };
-    case "ne":
-    case "neq": return { known: true, available: actual !== condition.value };
+    case "ne": return { known: true, available: actual !== condition.value };
     case "gt": return { known: true, available: actual > condition.value };
     case "gte": return { known: true, available: actual >= condition.value };
     case "lt": return { known: true, available: actual < condition.value };
@@ -1175,7 +1174,7 @@ function describePreviewCondition(condition) {
   if (Array.isArray(condition.any)) return condition.any.map(describePreviewCondition).join(" or ") || "never";
   if (condition.not) return `not (${describePreviewCondition(condition.not)})`;
   const actual = readPreviewPath(condition.path);
-  const operators = { eq: "=", ne: "≠", neq: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
+  const operators = { eq: "=", ne: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
   const current = actual === undefined ? "unknown" : `current ${actual}`;
   return `${condition.path} ${operators[condition.op] || condition.op} ${condition.value} (${current})`;
 }
@@ -1272,6 +1271,7 @@ function onNewEntity() {
 
   const packId = state.manifest.packId || "lichtwald";
   const entity = createEmptyEntity(type, cleanId, packId);
+  registerEntityTemplateRequirements(type, cleanId);
 
   if (type === "stories") {
     if (Object.hasOwn(state.stories, cleanId)) return alert("ID already exists");
@@ -1319,6 +1319,34 @@ function registerPackageDocument(filePath, documentData) {
   state.documents[filePath] = documentData;
   state.files[filePath] = JSON.stringify(documentData, null, 2);
   if (!state.manifest.files.includes(filePath)) state.manifest.files.push(filePath);
+}
+
+/**
+ * New entities reference text keys and assets, not inline text. Register the
+ * placeholder strings/assets the template references so the package validates
+ * immediately; authors replace the placeholders afterwards.
+ */
+function registerEntityTemplateRequirements(type, id) {
+  const { strings, assets } = entityTemplateRequirements(type, id);
+  if (!Object.keys(strings).length && !assets.length) return;
+  const localeFiles = Object.keys(state.locales);
+  for (const locale of localeFiles) {
+    const document = state.locales[locale];
+    if (!document || typeof document !== "object") continue;
+    if (!Object.hasOwn(document, "strings")) document.strings = {};
+    for (const [key, value] of Object.entries(strings)) {
+      if (!Object.hasOwn(document.strings, key)) document.strings[key] = value;
+    }
+  }
+  if (assets.length) {
+    if (!state.assets || typeof state.assets !== "object") state.assets = {};
+    if (!Array.isArray(state.assets.assets)) state.assets.assets = [];
+    const existing = new Set(state.assets.assets.map(record => record?.id));
+    for (const asset of assets) {
+      if (!existing.has(asset.id)) state.assets.assets.push(asset);
+    }
+  }
+  markDirty();
 }
 
 function ensurePackageCollection(filePath, currentDocument, collectionName) {

@@ -16,7 +16,13 @@ const ENTITY_TYPES = {
   locales: { label: "Locales", singular: "locale string", folder: "locales" }
 };
 
-/** Minimal empty templates for "New Entity" */
+/**
+ * Minimal empty templates for "New Entity".
+ * Text and art use the package convention: locale text keys (`*Key`) and
+ * asset references (`*AssetId`, `illustration.assetId`) — never inline
+ * locale objects. The workbench registers the referenced strings/assets on
+ * creation so the package validates immediately.
+ */
 function createEmptyEntity(type, id, packId = "lichtwald") {
   switch (type) {
     case "stories":
@@ -25,13 +31,14 @@ function createEmptyEntity(type, id, packId = "lichtwald") {
         packId,
         story: {
           id,
-          title: { de: "Neue Geschichte", en: "New Story" },
+          titleKey: `story.${id}.title`,
           startNodeId: "start",
           nodes: [
             {
               id: "start",
               type: "storyBeat",
-              caption: { de: "Anfang…" },
+              captionKey: `story.${id}.start.caption`,
+              illustration: { assetId: `story_${id}_start` },
               transitions: []
             }
           ]
@@ -41,7 +48,8 @@ function createEmptyEntity(type, id, packId = "lichtwald") {
       return {
         id,
         kind: "stock",
-        displayName: { de: id, en: id },
+        nameKey: `resource.${id}.name`,
+        iconAssetId: `resource_${id}`,
         initialAmount: 0,
         bounds: { min: 0 }
       };
@@ -52,7 +60,8 @@ function createEmptyEntity(type, id, packId = "lichtwald") {
         npcs: [
           {
             id,
-            displayName: { de: id, en: id },
+            displayNameKey: `npc.${id}.name`,
+            portraitAssetId: `npc_${id}_portrait`,
             initialRelationship: 0
           }
         ],
@@ -70,15 +79,51 @@ function createEmptyEntity(type, id, packId = "lichtwald") {
   }
 }
 
-/** Known effect operations (allow-list) */
+/**
+ * Locale strings and placeholder assets a freshly created entity of `type`
+ * must reference. Used by the workbench so new entities validate immediately.
+ */
+function entityTemplateRequirements(type, id) {
+  switch (type) {
+    case "stories":
+      return {
+        strings: {
+          [`story.${id}.title`]: id,
+          [`story.${id}.start.caption`]: id
+        },
+        assets: [
+          { id: `story_${id}_start`, type: "image", status: "placeholder", artBrief: `Illustration for story ${id} (start beat).` }
+        ]
+      };
+    case "resources":
+      return {
+        strings: { [`resource.${id}.name`]: id },
+        assets: [
+          { id: `resource_${id}`, type: "image", status: "placeholder", artBrief: `Icon for resource ${id}; recognizable at icon size.` }
+        ]
+      };
+    case "npcs":
+      return {
+        strings: { [`npc.${id}.name`]: id },
+        assets: [
+          { id: `npc_${id}_portrait`, type: "image", status: "placeholder", artBrief: `Portrait for NPC ${id}.` }
+        ]
+      };
+    default:
+      return { strings: {}, assets: [] };
+  }
+}
+
+/** Known effect operations (allow-list, PB-02c) */
 const ALLOWED_EFFECTS = [
   "resource.add",
   "resource.spend",
   "relationship.adjust",
   "unlock",
   "flag.set",
-  "event.record"
+  "event.record",
+  "combat.request"
 ];
 
-/** Known condition operators */
-const ALLOWED_OPS = ["eq", "neq", "gt", "gte", "lt", "lte", "exists", "not"];
+/** Known condition operators (allow-list, PB-02b; canonical spelling is `ne`) */
+const ALLOWED_OPS = ["eq", "ne", "gt", "gte", "lt", "lte", "exists", "not"];

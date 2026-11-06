@@ -279,6 +279,37 @@ for (const scenario of [
   });
 }
 
+for (const scenario of [
+  { type: "stories", id: "template_story" },
+  { type: "npcs", id: "template_npc" },
+  { type: "resources", id: "template_resource" }
+]) {
+  test(`creating a ${scenario.type} entity registers template text keys and assets so the package stays valid`, () => {
+    const { context, loaded } = createWorkbench();
+    createEntity(context, scenario.type, scenario.id);
+    const result = vm.runInContext("validatePackage(state)", context);
+    assert.equal(result.ok, true, result.messages.filter(m => m.level === "error").map(m => m.text).join("; "));
+    const deStrings = loaded.documents["locales/de.json"].strings;
+    const enStrings = loaded.documents["locales/en.json"].strings;
+    const expectedKey = {
+      stories: `story.${scenario.id}.title`,
+      npcs: `npc.${scenario.id}.name`,
+      resources: `resource.${scenario.id}.name`
+    }[scenario.type];
+    assert.ok(Object.hasOwn(deStrings, expectedKey), "de locale must contain the template string");
+    assert.ok(Object.hasOwn(enStrings, expectedKey), "en locale must contain the template string");
+    const expectedAsset = {
+      stories: `story_${scenario.id}_start`,
+      npcs: `npc_${scenario.id}_portrait`,
+      resources: `resource_${scenario.id}`
+    }[scenario.type];
+    assert.ok(
+      loaded.documents["assets.json"].assets.some(asset => asset.id === expectedAsset),
+      "assets.json must contain the placeholder asset"
+    );
+  });
+}
+
 test("new IDs that cannot be represented as package file names are rejected", () => {
   const { context, loaded } = createWorkbench();
   createEntity(context, "stories", "../unsafe");
