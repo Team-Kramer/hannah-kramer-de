@@ -24,6 +24,7 @@ const state = {
   previewLocale: "de",
   previewResources: {},
   previewVisited: new Set(),
+  previewUnlocks: new Set(),
   baseManifest: null,
   baseDocuments: null,
   baseFingerprint: null,
@@ -894,6 +895,7 @@ function resetPreview(storyId) {
   state.previewNodeId = story?.startNodeId || null;
   state.previewDialogueNodeId = null;
   state.previewVisited = new Set(state.previewNodeId ? [state.previewNodeId] : []);
+  state.previewUnlocks = new Set();
   state.previewResources = Object.fromEntries(
     (state.resources.resources || []).map(resource => [resource.id, Number(resource.initialAmount) || 0])
   );
@@ -1137,6 +1139,14 @@ function evaluatePreviewCondition(condition) {
     return nested.known ? { known: true, available: !nested.available } : nested;
   }
 
+  if (condition.op === "exists") {
+    // Presence check. The preview is read-only and synthesizes every
+    // registered field, so "known" means the path is allow-listed +
+    // registered and "available" means it resolves to a real field.
+    if (readPreviewPath(condition.path) === undefined) return { known: false };
+    return { known: true, available: true };
+  }
+
   const actual = readPreviewPath(condition.path);
   if (actual === undefined || typeof condition.value !== typeof actual) return { known: false };
   switch (condition.op) {
@@ -1166,6 +1176,15 @@ function readPreviewPath(pathValue) {
     const npc = findNpc(parts[1]);
     return npc ? npc.initialRelationship : undefined;
   }
+  if (parts.length === 3 && parts[0] === "unlocks" && ConditionDsl.UNLOCK_SCOPES.includes(parts[1])) {
+    const id = parts[2];
+    const registered =
+      parts[1] === "recipes" ? (state.resources.recipes || [])
+      : parts[1] === "producers" ? (state.resources.producers || [])
+      : (state.combat.encounters || []);
+    if (!registered.some(record => record.id === id)) return undefined;
+    return state.previewUnlocks.has(`${parts[1]}.${id}`);
+  }
   return undefined;
 }
 
@@ -1173,6 +1192,10 @@ function describePreviewCondition(condition) {
   if (Array.isArray(condition.all)) return condition.all.map(describePreviewCondition).join(" and ") || "always";
   if (Array.isArray(condition.any)) return condition.any.map(describePreviewCondition).join(" or ") || "never";
   if (condition.not) return `not (${describePreviewCondition(condition.not)})`;
+  if (condition.op === "exists") {
+    const present = readPreviewPath(condition.path) !== undefined;
+    return `${condition.path} exists (${present ? "present" : "unknown"})`;
+  }
   const actual = readPreviewPath(condition.path);
   const operators = { eq: "=", ne: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
   const current = actual === undefined ? "unknown" : `current ${actual}`;

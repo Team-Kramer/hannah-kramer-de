@@ -39,6 +39,7 @@ function createWorkbench() {
   };
   const context = vm.createContext({ document, window: windowObject });
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/package_loader.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/condition_dsl.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/schema.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/validator.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/merge.js"), "utf8"), context);
@@ -431,6 +432,46 @@ test("story preview conditions reflect editable sample resources without changin
   const available = JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(previewCondition))", context));
   assert.deepEqual(available, { known: true, available: true });
   assert.equal(loadedResourceAmount(context), 0, "preview amounts must not mutate package definitions");
+});
+
+test("story preview resolves unlocks.* paths and exists conditions against the loaded package", () => {
+  const { context } = createWorkbench();
+  vm.runInContext(`
+    state.previewStoryId = "story_spielplatz";
+    state.previewUnlocks = new Set();
+  `, context);
+
+  // A registered recipe: known, and false in the (read-only) preview state.
+  context.unlockCondition = { path: "unlocks.recipes.make_lichttropfen", op: "eq", value: true };
+  const locked = JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(unlockCondition))", context));
+  assert.deepEqual(locked, { known: true, available: false });
+
+  // Unlocks become available once the preview records the unlock.
+  vm.runInContext("state.previewUnlocks.add('recipes.make_lichttropfen')", context);
+  const unlocked = JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(unlockCondition))", context));
+  assert.deepEqual(unlocked, { known: true, available: true });
+
+  // An unregistered recipe id is unknown, not an error.
+  context.unknownUnlock = { path: "unlocks.recipes.not_registered", op: "eq", value: true };
+  assert.deepEqual(
+    JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(unknownUnlock))", context)),
+    { known: false }
+  );
+
+  // exists: known + available for a registered path, unknown for a bad scope.
+  context.existsCondition = { path: "unlocks.recipes.make_lichttropfen", op: "exists" };
+  assert.deepEqual(
+    JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(existsCondition))", context)),
+    { known: true, available: true }
+  );
+  const existsExplanation = vm.runInContext("describePreviewCondition(existsCondition)", context);
+  assert.match(existsExplanation, /exists \(present\)/);
+
+  context.badScope = { path: "unlocks.unknownScope.x", op: "exists" };
+  assert.deepEqual(
+    JSON.parse(vm.runInContext("JSON.stringify(evaluatePreviewCondition(badScope))", context)),
+    { known: false }
+  );
 });
 
 test("domain table exposes every fixture entity and selects the matching inspector record", () => {

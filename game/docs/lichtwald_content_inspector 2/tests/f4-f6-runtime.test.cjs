@@ -1,7 +1,20 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 const { test } = require("node:test");
+
+// The shared condition DSL is a browser global (UMD). Load it the same way the
+// other web/js files are loaded in tests: evaluate in a bare context and read
+// the global it installs.
+const ConditionDsl = (() => {
+  const context = vm.createContext({});
+  vm.runInContext(
+    fs.readFileSync(path.join(__dirname, "../web/js/condition_dsl.js"), "utf8"),
+    context
+  );
+  return context.ConditionDsl;
+})();
 
 const fixtureRoot = path.resolve(__dirname, "../fixtures/spielplatz_demo");
 const manifest = JSON.parse(fs.readFileSync(path.join(fixtureRoot, "manifest.json"), "utf8"));
@@ -12,7 +25,7 @@ const pkg = Object.fromEntries(
 const MAX_CONDITION_DEPTH = 12;
 const MAX_CONDITION_NODES = 64;
 const COMBAT_PROFILES = new Set(["turn_based_core"]);
-const CONDITION_OPERATORS = new Set(["eq", "ne", "gt", "gte", "lt", "lte"]);
+const CONDITION_OPERATORS = ConditionDsl.CONDITION_OPERATORS;
 
 function catalogFor(input = pkg) {
   const story = input["stories/story_spielplatz.json"]?.story || {};
@@ -68,31 +81,10 @@ function initialState(catalog = catalogFor()) {
   };
 }
 
+// Path resolution and comparison live in the shared condition DSL so the
+// workbench preview and this runtime prototype cannot drift apart (PD-01b).
 function conditionPath(pathValue, state, catalog) {
-  if (typeof pathValue !== "string") throw new Error("condition.path must be a string");
-  const parts = pathValue.split(".");
-  const [scope, id, leaf] = parts;
-  let collection;
-  if (scope === "resources" && parts.length === 2) collection = [state.resources, catalog.resources];
-  else if (scope === "relationships" && parts.length === 2) collection = [state.relationships, catalog.npcs];
-  else if (scope === "flags" && parts.length === 2) collection = [state.flags, null];
-  else if (scope === "story" && id === "visited" && parts.length === 3) {
-    collection = [state.story.visited, catalog.storyNodes];
-  } else if (scope === "unlocks" && parts.length === 3 && ["recipes", "producers", "combatEncounters"].includes(id)) {
-    const registered = id === "recipes" ? catalog.recipes : id === "producers" ? catalog.producers : catalog.encounters;
-    collection = [state.unlocks[id], registered];
-  } else {
-    throw new Error(`condition path is not allow-listed: ${pathValue}`);
-  }
-  const [values, registered] = collection;
-  const key = scope === "story" ? leaf : parts.length === 3 ? leaf : id;
-  if (registered && !registered.has(key)) throw new Error(`condition references unregistered ID: ${pathValue}`);
-  if (!Object.hasOwn(values, key)) throw new Error(`condition state field is missing: ${pathValue}`);
-  const value = values[key];
-  if (typeof value !== "number" && typeof value !== "boolean") {
-    throw new Error(`condition state field has wrong type: ${pathValue}`);
-  }
-  return value;
+  return ConditionDsl.readConditionPath(pathValue, state, catalog);
 }
 
 function validateCondition(expression, state, catalog, depth = 0, budget = { count: 0 }) {
@@ -111,6 +103,15 @@ function validateCondition(expression, state, catalog, depth = 0, budget = { cou
   }
   if (keys.length === 1 && keys[0] === "not") {
     validateCondition(expression.not, state, catalog, depth + 1, budget);
+    return;
+  }
+  if (expression.op === "exists") {
+    // Structural operator: validates the path (allow-list + registration) but
+    // must not require the field to be present, and takes no `value`.
+    if (keys.length !== 2 || !["path", "op"].every((key) => Object.hasOwn(expression, key))) {
+      throw new Error("exists condition leaf must contain only path and op");
+    }
+    ConditionDsl.validateConditionPath(expression.path, catalog);
     return;
   }
   if (keys.length !== 3 || !["path", "op", "value"].every((key) => Object.hasOwn(expression, key))) {
@@ -139,6 +140,7 @@ function evaluateCondition(expression, state, catalog = catalogFor()) {
   if (Object.hasOwn(expression, "not")) {
     return !evaluateConditionUnchecked(expression.not, state, catalog);
   }
+  if (expression.op === "exists") return ConditionDsl.conditionPathExists(expression.path, state, catalog);
   return compare(conditionPath(expression.path, state, catalog), expression.op, expression.value);
 }
 
@@ -146,19 +148,12 @@ function evaluateConditionUnchecked(expression, state, catalog) {
   if (Object.hasOwn(expression, "all")) return expression.all.every((child) => evaluateConditionUnchecked(child, state, catalog));
   if (Object.hasOwn(expression, "any")) return expression.any.some((child) => evaluateConditionUnchecked(child, state, catalog));
   if (Object.hasOwn(expression, "not")) return !evaluateConditionUnchecked(expression.not, state, catalog);
+  if (expression.op === "exists") return ConditionDsl.conditionPathExists(expression.path, state, catalog);
   return compare(conditionPath(expression.path, state, catalog), expression.op, expression.value);
 }
 
 function compare(actual, operator, expected) {
-  switch (operator) {
-    case "eq": return actual === expected;
-    case "ne": return actual !== expected;
-    case "gt": return actual > expected;
-    case "gte": return actual >= expected;
-    case "lt": return actual < expected;
-    case "lte": return actual <= expected;
-    default: throw new Error(`condition operator is not allow-listed: ${operator}`);
-  }
+  return ConditionDsl.compareConditionValue(actual, operator, expected);
 }
 
 function checkAvailability(condition, state, catalog = catalogFor()) {
@@ -532,6 +527,32 @@ test("malformed, missing, wrong-typed, unknown, and oversized conditions are rej
   for (let depth = 0; depth < MAX_CONDITION_DEPTH + 1; depth += 1) deep = { not: deep };
   rejects(deep, /depth limit/);
   rejects({ all: Array.from({ length: MAX_CONDITION_NODES }, () => ({ path: "resources.holz", op: "gte", value: 0 })) }, /node limit/);
+});
+
+test("exists checks field presence without requiring a value or a present field", () => {
+  const catalog = catalogFor();
+  const state = initialState(catalog);
+  // A registered flag that is absent from state: not rejected, simply false.
+  assert.equal(evaluateCondition({ path: "flags.not_set_yet", op: "exists" }, state, catalog), false);
+  // A registered flag that is present: true.
+  assert.equal(evaluateCondition({ path: "flags.juan_listened", op: "exists" }, state, catalog), true);
+  // exists takes no value: a third key is rejected.
+  assert.throws(
+    () => evaluateCondition({ path: "flags.juan_listened", op: "exists", value: true }, state, catalog),
+    /only path and op/
+  );
+  // exists still enforces allow-list and registration.
+  assert.throws(() => evaluateCondition({ path: "unlocks.unknownScope.x", op: "exists" }, state, catalog), /not allow-listed/);
+  assert.throws(() => evaluateCondition({ path: "unlocks.recipes.not_registered", op: "exists" }, state, catalog), /unregistered ID/);
+});
+
+test("unlocks.* condition paths resolve against the shared state", () => {
+  const catalog = catalogFor();
+  const state = initialState(catalog);
+  assert.equal(evaluateCondition({ path: "unlocks.recipes.make_lichttropfen", op: "eq", value: false }, state, catalog), true);
+  state.unlocks.recipes.make_lichttropfen = true;
+  assert.equal(evaluateCondition({ path: "unlocks.recipes.make_lichttropfen", op: "eq", value: true }, state, catalog), true);
+  assert.equal(evaluateCondition({ path: "unlocks.recipes.make_lichttropfen", op: "exists" }, state, catalog), true);
 });
 
 test("resource, relationship, flag, and unlock effects apply to the shared state", () => {
