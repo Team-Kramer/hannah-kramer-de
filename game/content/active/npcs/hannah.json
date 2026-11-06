@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "npcs": [
+    {
+      "id": "hannah",
+      "displayNameKey": "npc.hannah.name",
+      "portraitAssetId": "portrait_hannah",
+      "initialRelationship": 0
+    }
+  ],
+  "conversations": [
+    {
+      "id": "hannah_listening",
+      "npcId": "hannah",
+      "entryCondition": {
+        "all": [
+          { "path": "story.visited.opening", "op": "eq", "value": true }
+        ]
+      },
+      "startNodeId": "listen",
+      "nodes": [
+        {
+          "id": "listen",
+          "type": "line",
+          "speakerId": "hannah",
+          "textKey": "conversation.hannah_listening.listen.text",
+          "illustrationAssetId": "illus_hannah_listening",
+          "choices": [
+            {
+              "id": "weiter",
+              "labelKey": "conversation.hannah_listening.listen.weiter.label",
+              "effects": [],
+              "to": "understood"
+            }
+          ]
+        },
+        {
+          "id": "understood",
+          "type": "line",
+          "speakerId": "hannah",
+          "textKey": "conversation.hannah_listening.understood.text",
+          "illustrationAssetId": "portrait_hannah",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}

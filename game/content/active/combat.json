@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "enemies": [
+    {
+      "id": "schatten_der_eile",
+      "nameKey": "enemy.schatten_der_eile.name",
+      "descriptionKey": "enemy.schatten_der_eile.description",
+      "illustrationAssetId": "illus_schatten_der_eile",
+      "alignment": "evil"
+    }
+  ],
+  "encounters": [
+    {
+      "id": "encounter_schatten_der_eile",
+      "enemyId": "schatten_der_eile",
+      "locationId": "spielplatz",
+      "nameKey": "encounter.schatten_der_eile.name",
+      "illustrationAssetId": "illus_encounter_schatten",
+      "combatProfileId": "turn_based_core",
+      "availableWhen": {
+        "all": [
+          {
+            "path": "flags.encounter_schatten_der_eile_unlocked",
+            "op": "eq",
+            "value": true
+          }
+        ]
+      },
+      "victoryTextKey": "encounter.schatten_der_eile.victory",
+      "defeatTextKey": "encounter.schatten_der_eile.defeat",
+      "effects": [
+        {
+          "op": "resource.add",
+          "resourceId": "mut_sterne",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "story": {
+    "id": "story_mission_spielplatz",
+    "titleKey": "story_mission_spielplatz.title",
+    "startNodeId": "opening",
+    "nodes": [
+      {
+        "id": "opening",
+        "type": "storyBeat",
+        "locationId": "spielplatz",
+        "captionKey": "story_mission_spielplatz.opening.caption",
+        "illustration": { "assetId": "illus_spielplatz_broken" },
+        "transitions": [ { "id": "to_listening", "to": "hannah_listening" } ]
+      },
+      {
+        "id": "hannah_listening",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "hannah_listening",
+        "captionKey": "story_mission_spielplatz.hannah_listening.caption",
+        "illustration": { "assetId": "illus_hannah_listening" },
+        "transitions": [ { "id": "to_juan", "to": "juan_wishing" } ]
+      },
+      {
+        "id": "juan_wishing",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "juan_wishes",
+        "captionKey": "story_mission_spielplatz.juan_wishing.caption",
+        "illustration": { "assetId": "illus_juan_edge" },
+        "transitions": [ { "id": "to_lina", "to": "lina_wishing" } ]
+      },
+      {
+        "id": "lina_wishing",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "lina_wishes",
+        "captionKey": "story_mission_spielplatz.lina_wishing.caption",
+        "illustration": { "assetId": "portrait_lina" },
+        "transitions": [ { "id": "to_tobi", "to": "tobi_wishing" } ]
+      },
+      {
+        "id": "tobi_wishing",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "tobi_wishes",
+        "captionKey": "story_mission_spielplatz.tobi_wishing.caption",
+        "illustration": { "assetId": "portrait_tobi" },
+        "transitions": [ { "id": "to_oma", "to": "oma_linde_wishing" } ]
+      },
+      {
+        "id": "oma_linde_wishing",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "oma_linde_wishes",
+        "captionKey": "story_mission_spielplatz.oma_linde_wishing.caption",
+        "illustration": { "assetId": "portrait_oma_linde" },
+        "transitions": [ { "id": "to_first_choice", "to": "first_choice" } ]
+      },
+      {
+        "id": "first_choice",
+        "type": "decision",
+        "locationId": "spielplatz",
+        "promptKey": "story_mission_spielplatz.first_choice.prompt",
+        "illustration": { "assetId": "illus_hannah_moderating" },
+        "choices": [
+          {
+            "id": "build_barrierefrei",
+            "labelKey": "story_mission_spielplatz.first_choice.build_barrierefrei.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 50 } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 50 },
+              { "op": "flag.set", "flagId": "built_barrierefrei", "value": true }
+            ],
+            "to": "second_choice"
+          },
+          {
+            "id": "build_rutsche",
+            "labelKey": "story_mission_spielplatz.first_choice.build_rutsche.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 40 } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 40 },
+              { "op": "flag.set", "flagId": "built_rutsche", "value": true }
+            ],
+            "to": "second_choice"
+          },
+          {
+            "id": "build_fussball",
+            "labelKey": "story_mission_spielplatz.first_choice.build_fussball.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 35 } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 35 },
+              { "op": "flag.set", "flagId": "built_fussball", "value": true }
+            ],
+            "to": "second_choice"
+          },
+          {
+            "id": "build_ruhebereich",
+            "labelKey": "story_mission_spielplatz.first_choice.build_ruhebereich.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 30 } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 30 },
+              { "op": "flag.set", "flagId": "built_ruhebereich", "value": true }
+            ],
+            "to": "second_choice"
+          },
+          {
+            "id": "later",
+            "labelKey": "story_mission_spielplatz.first_choice.later.label",
+            "when": { "all": [] },
+            "effects": [],
+            "to": "weak"
+          }
+        ]
+      },
+      {
+        "id": "second_choice",
+        "type": "decision",
+        "locationId": "spielplatz",
+        "promptKey": "story_mission_spielplatz.second_choice.prompt",
+        "illustration": { "assetId": "illus_hannah_moderating" },
+        "choices": [
+          {
+            "id": "finish",
+            "labelKey": "story_mission_spielplatz.second_choice.finish.label",
+            "when": { "all": [] },
+            "effects": [],
+            "to": "check_outcome"
+          },
+          {
+            "id": "add_barrierefrei",
+            "labelKey": "story_mission_spielplatz.second_choice.add_barrierefrei.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 50 }, { "not": { "path": "flags.built_barrierefrei", "op": "exists" } } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 50 },
+              { "op": "flag.set", "flagId": "built_barrierefrei", "value": true }
+            ],
+            "to": "check_outcome"
+          },
+          {
+            "id": "add_rutsche",
+            "labelKey": "story_mission_spielplatz.second_choice.add_rutsche.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 40 }, { "not": { "path": "flags.built_rutsche", "op": "exists" } } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 40 },
+              { "op": "flag.set", "flagId": "built_rutsche", "value": true }
+            ],
+            "to": "check_outcome"
+          },
+          {
+            "id": "add_fussball",
+            "labelKey": "story_mission_spielplatz.second_choice.add_fussball.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 35 }, { "not": { "path": "flags.built_fussball", "op": "exists" } } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 35 },
+              { "op": "flag.set", "flagId": "built_fussball", "value": true }
+            ],
+            "to": "check_outcome"
+          },
+          {
+            "id": "add_ruhebereich",
+            "labelKey": "story_mission_spielplatz.second_choice.add_ruhebereich.label",
+            "when": { "all": [ { "path": "resources.lichttropfen", "op": "gte", "value": 30 }, { "not": { "path": "flags.built_ruhebereich", "op": "exists" } } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "lichttropfen", "amount": 30 },
+              { "op": "flag.set", "flagId": "built_ruhebereich", "value": true }
+            ],
+            "to": "check_outcome"
+          }
+        ]
+      },
+      {
+        "id": "check_outcome",
+        "type": "decision",
+        "locationId": "spielplatz",
+        "promptKey": "story_mission_spielplatz.check_outcome.prompt",
+        "illustration": { "assetId": "illus_hannah_moderating" },
+        "choices": [
+          {
+            "id": "good",
+            "labelKey": "story_mission_spielplatz.check_outcome.good.label",
+            "when": { "all": [ { "path": "flags.built_barrierefrei", "op": "exists" }, { "any": [ { "path": "flags.built_rutsche", "op": "exists" }, { "path": "flags.built_fussball", "op": "exists" }, { "path": "flags.built_ruhebereich", "op": "exists" } ] } ] },
+            "effects": [],
+            "to": "good"
+          },
+          {
+            "id": "middle",
+            "labelKey": "story_mission_spielplatz.check_outcome.middle.label",
+            "when": { "all": [ { "not": { "path": "flags.built_barrierefrei", "op": "exists" } }, { "any": [ { "path": "flags.built_rutsche", "op": "exists" }, { "path": "flags.built_fussball", "op": "exists" } ] } ] },
+            "effects": [],
+            "to": "middle"
+          },
+          {
+            "id": "weak",
+            "labelKey": "story_mission_spielplatz.check_outcome.weak.label",
+            "when": { "all": [] },
+            "effects": [],
+            "to": "weak"
+          }
+        ]
+      },
+      {
+        "id": "good",
+        "type": "outcome",
+        "locationId": "spielplatz",
+        "captionKey": "story_mission_spielplatz.good.caption",
+        "illustration": { "assetId": "illus_joy_barrier_free" },
+        "effects": [
+          { "op": "resource.add", "resourceId": "mut_sterne", "amount": 15 },
+          { "op": "resource.add", "resourceId": "freundschaft", "amount": 20 },
+          { "op": "flag.set", "flagId": "licht_rat_unlocked", "value": true }
+        ],
+        "transitions": [ { "id": "to_licht_rat", "to": "licht_rat" } ]
+      },
+      {
+        "id": "middle",
+        "type": "outcome",
+        "locationId": "spielplatz",
+        "captionKey": "story_mission_spielplatz.middle.caption",
+        "illustration": { "assetId": "illus_shadow_whisper" },
+        "effects": [ { "op": "flag.set", "flagId": "schatten_der_eile_stronger", "value": true } ],
+        "transitions": [ { "id": "to_shadow", "to": "shadow" } ]
+      },
+      {
+        "id": "shadow",
+        "type": "conversation",
+        "locationId": "spielplatz",
+        "conversationId": "shadow_whisper",
+        "captionKey": "story_mission_spielplatz.shadow.caption",
+        "illustration": { "assetId": "illus_shadow_whisper" },
+        "transitions": []
+      },
+      {
+        "id": "weak",
+        "type": "outcome",
+        "locationId": "spielplatz",
+        "captionKey": "story_mission_spielplatz.weak.caption",
+        "illustration": { "assetId": "illus_spielplatz_broken" },
+        "effects": [],
+        "transitions": [ { "id": "try_again", "to": "first_choice" } ]
+      },
+      {
+        "id": "licht_rat",
+        "type": "storyBeat",
+        "locationId": "spielplatz",
+        "captionKey": "story_mission_spielplatz.licht_rat.caption",
+        "illustration": { "assetId": "illus_licht_rat" },
+        "transitions": []
+      }
+    ]
+  }
+}

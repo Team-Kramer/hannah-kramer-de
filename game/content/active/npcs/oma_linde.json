@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "npcs": [
+    {
+      "id": "oma_linde",
+      "displayNameKey": "npc.oma_linde.name",
+      "portraitAssetId": "portrait_oma_linde",
+      "initialRelationship": 0
+    }
+  ],
+  "conversations": [
+    {
+      "id": "oma_linde_wishes",
+      "npcId": "oma_linde",
+      "entryCondition": {
+        "all": [
+          { "path": "story.visited.tobi_wishing", "op": "eq", "value": true }
+        ]
+      },
+      "startNodeId": "wish",
+      "nodes": [
+        {
+          "id": "wish",
+          "type": "line",
+          "speakerId": "oma_linde",
+          "textKey": "conversation.oma_linde_wishes.wish.text",
+          "illustrationAssetId": "portrait_oma_linde",
+          "choices": [
+            {
+              "id": "listen",
+              "labelKey": "conversation.oma_linde_wishes.wish.listen.label",
+              "effects": [],
+              "to": "thanks"
+            },
+            {
+              "id": "distract",
+              "labelKey": "conversation.oma_linde_wishes.wish.distract.label",
+              "effects": [],
+              "to": "later"
+            }
+          ]
+        },
+        {
+          "id": "thanks",
+          "type": "line",
+          "speakerId": "oma_linde",
+          "textKey": "conversation.oma_linde_wishes.thanks.text",
+          "illustrationAssetId": "portrait_oma_linde",
+          "choices": []
+        },
+        {
+          "id": "later",
+          "type": "line",
+          "speakerId": "oma_linde",
+          "textKey": "conversation.oma_linde_wishes.later.text",
+          "illustrationAssetId": "portrait_oma_linde",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}
