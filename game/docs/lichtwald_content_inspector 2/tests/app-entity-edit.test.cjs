@@ -12,7 +12,7 @@ vm.runInNewContext(
   fs.readFileSync(path.join(workbenchRoot, "web/js/package_loader.js"), "utf8"),
   loaderContext
 );
-const { parsePackage } = loaderContext.ContentPackage;
+const { parsePackage, fingerprintPackage } = loaderContext.ContentPackage;
 
 function createWorkbench() {
   const elements = new Map();
@@ -41,6 +41,7 @@ function createWorkbench() {
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/package_loader.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/schema.js"), "utf8"), context);
   vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/validator.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(workbenchRoot, "web/js/merge.js"), "utf8"), context);
   vm.runInContext(appSource, context);
   vm.runInContext(`
     renderEntityList = () => {};
@@ -66,7 +67,11 @@ function createWorkbench() {
       entityFiles: loaded.entityFiles,
       currentType: "",
       currentId: null,
-      dirty: false
+      dirty: false,
+      packageName: loaded.packageName,
+      baseManifest: JSON.parse(JSON.stringify(loaded.manifest)),
+      baseDocuments: JSON.parse(JSON.stringify(loaded.documents)),
+      baseFingerprint: ContentPackage.fingerprintPackage(loaded.manifest, loaded.documents)
     });
   `, context);
   return { context, elements, loaded, windowObject };
@@ -330,6 +335,10 @@ test("bundle import replaces the active package only after the bundle is fully p
   const { context, elements, loaded } = createWorkbench();
   const bundle = vm.runInContext("ContentPackage.createPackageBundle(loaded)", context);
   bundle["locations.json"].locations[0].nameKey = "location.imported.name";
+  bundle._meta.packageFingerprint = fingerprintPackage(
+    bundle["manifest.json"],
+    Object.fromEntries(bundle["manifest.json"].files.map(filePath => [filePath, bundle[filePath]]))
+  );
   context.bundleText = JSON.stringify(bundle);
 
   await vm.runInContext(`
@@ -425,6 +434,92 @@ test("domain table exposes every fixture entity and selects the matching inspect
   assert.ok(table.children[0].children[0].children.some(cell => cell.textContent === "value"));
   assert.equal(table.children[1].children.length, 46);
   assert.equal(table.children[1].children[0].className, "selected");
+});
+
+test("event rule matrix explains fixture triggers and effects and filters by content", () => {
+  const { context, elements } = createWorkbench();
+  vm.runInContext("renderEventRules()", context);
+
+  let table = elements.get("#event-rules-table").children[0];
+  assert.equal(table.children[1].children.length, 2);
+  const firstRule = table.children[1].children[0].children.map(cell => cell.textContent);
+  assert.equal(firstRule[0], "unlock_playground_options");
+  assert.match(firstRule[1], /resource\.totalAtLeast/);
+  assert.match(firstRule[1], /resourceId=holz/);
+  assert.match(firstRule[2], /Always/);
+  assert.match(firstRule[3], /Unlock recipe make_lichttropfen/);
+  assert.match(firstRule[3], /Set flag encounter_playground_shadow_unlocked to true/);
+
+  vm.runInContext(`
+    el.eventRuleSearch.value = "juan";
+    renderEventRules();
+  `, context);
+  table = elements.get("#event-rules-table").children[0];
+  assert.equal(table.children[1].children.length, 1);
+  assert.equal(table.children[1].children[0].children[0].textContent, "juan_listened");
+});
+
+test("co-edit review validates and prepares independent branch changes", () => {
+  const { context, elements } = createWorkbench();
+  context.localCaption = "A human-edited greeting";
+  context.remoteAmount = 2;
+  vm.runInContext(`
+    state.documents["locales/de.json"].strings["conversation.juan_playground.wish.text"] = localCaption;
+    const remoteDocuments = JSON.parse(JSON.stringify(state.baseDocuments));
+    remoteDocuments["resources.json"].resources[0].initialAmount = remoteAmount;
+    const incoming = ContentPackage.parsePackageBundle(
+      ContentPackage.createPackageBundle({
+        manifest: state.baseManifest,
+        documents: remoteDocuments,
+        baseFingerprint: state.baseFingerprint
+      }),
+      "incoming"
+    );
+    prepareCoeditMerge(incoming);
+  `, context);
+
+  assert.equal(vm.runInContext("state.pendingMerge !== null", context), true);
+  assert.equal(elements.get("#btn-apply-merge").disabled, false);
+  const merged = JSON.parse(vm.runInContext("JSON.stringify(state.pendingMerge.documents)", context));
+  assert.equal(merged["locales/de.json"].strings["conversation.juan_playground.wish.text"], "A human-edited greeting");
+  assert.equal(merged["resources.json"].resources[0].initialAmount, 2);
+});
+
+test("co-edit review blocks same-field conflicts and stale branch lineage", () => {
+  const { context, elements } = createWorkbench();
+  context.remoteAmount = 3;
+  vm.runInContext(`
+    state.documents["resources.json"].resources[0].initialAmount = 1;
+    const remoteDocuments = JSON.parse(JSON.stringify(state.baseDocuments));
+    remoteDocuments["resources.json"].resources[0].initialAmount = remoteAmount;
+    const incoming = ContentPackage.parsePackageBundle(
+      ContentPackage.createPackageBundle({
+        manifest: state.baseManifest,
+        documents: remoteDocuments,
+        baseFingerprint: state.baseFingerprint
+      }),
+      "incoming"
+    );
+    prepareCoeditMerge(incoming);
+  `, context);
+  assert.equal(vm.runInContext("state.pendingMerge === null", context), true);
+  assert.equal(elements.get("#btn-apply-merge").disabled, true);
+
+  assert.throws(() => vm.runInContext(`
+    prepareCoeditMerge({
+      manifest: state.manifest,
+      documents: state.baseDocuments,
+      bundleMeta: { sourceFingerprint: "stale-base" }
+    })
+  `, context), /same base package/);
+
+  assert.throws(() => vm.runInContext(`
+    prepareCoeditMerge({
+      manifest: { ...state.manifest, description: "changed independently" },
+      documents: state.baseDocuments,
+      bundleMeta: { sourceFingerprint: state.baseFingerprint }
+    })
+  `, context), /Manifest metadata changed/);
 });
 
 function loadedResourceAmount(context) {

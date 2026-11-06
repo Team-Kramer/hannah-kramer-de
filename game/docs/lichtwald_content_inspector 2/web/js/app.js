@@ -24,6 +24,10 @@ const state = {
   previewLocale: "de",
   previewResources: {},
   previewVisited: new Set(),
+  baseManifest: null,
+  baseDocuments: null,
+  baseFingerprint: null,
+  pendingMerge: null,
   dirty: false,
   files: {}         // original relative path -> text (for export)
 };
@@ -41,6 +45,8 @@ const el = {
   btnValidate: $("#btn-validate"),
   btnNew: $("#btn-new"),
   btnOpenBundle: $("#btn-open-bundle"),
+  btnOpenMergeBundle: $("#btn-open-merge-bundle"),
+  btnApplyMerge: $("#btn-apply-merge"),
   packageInfo: $("#package-info"),
   entityList: $("#entity-list"),
   entityCount: $("#entity-count"),
@@ -56,7 +62,13 @@ const el = {
   dirtyIndicator: $("#dirty-indicator"),
   folderInput: $("#folder-input"),
   fileInput: $("#file-input"),
+  mergeFileInput: $("#merge-file-input"),
+  mergeSummary: $("#coedit-summary"),
+  mergeReport: $("#coedit-report"),
   graphContainer: $("#graph-container"),
+  eventRuleSearch: $("#event-rule-search"),
+  eventRuleCount: $("#event-rule-count"),
+  eventRulesTable: $("#event-rules-table"),
   previewStory: $("#preview-story"),
   previewLocale: $("#preview-locale"),
   previewResourceState: $("#preview-resource-state"),
@@ -71,6 +83,9 @@ function init() {
   el.btnOpenBundle.addEventListener("click", () => el.fileInput.click());
   el.folderInput.addEventListener("change", onFolderSelected);
   el.fileInput.addEventListener("change", onBundleSelected);
+  el.btnOpenMergeBundle.addEventListener("click", () => el.mergeFileInput.click());
+  el.mergeFileInput.addEventListener("change", onMergeBundleSelected);
+  el.btnApplyMerge.addEventListener("click", applyCoeditMerge);
   el.btnSave.addEventListener("click", exportPackage);
   el.btnExportFolder.addEventListener("click", exportPackageFolder);
   el.btnValidate.addEventListener("click", runValidation);
@@ -80,6 +95,7 @@ function init() {
   $("#btn-graph-story").addEventListener("click", () => showStoryGraph());
   $("#btn-graph-deps").addEventListener("click", () => showDependencyGraph());
   $("#btn-graph-fit").addEventListener("click", fitGraph);
+  el.eventRuleSearch.addEventListener("input", renderEventRules);
   el.previewStory.addEventListener("change", () => resetPreview(el.previewStory.value));
   el.previewLocale.addEventListener("change", () => {
     state.previewLocale = el.previewLocale.value;
@@ -107,7 +123,9 @@ function init() {
       $$(".view").forEach(v => v.classList.remove("active"));
       $(`#view-${tab.dataset.view}`).classList.add("active");
       if (tab.dataset.view === "graph") showStoryGraph();
+      if (tab.dataset.view === "event-rules") renderEventRules();
       if (tab.dataset.view === "preview") renderPreview();
+      if (tab.dataset.view === "coedit") renderCoeditSummary();
       if (tab.dataset.view === "raw") refreshRawJson();
       if (tab.dataset.view === "table") renderEntityTable();
     });
@@ -157,8 +175,139 @@ async function onBundleSelected(e) {
   }
 }
 
-function installPackage(loaded) {
-  if (state.dirty && !window.confirm("Discard unsaved package changes and load another package?")) {
+async function onMergeBundleSelected(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  state.pendingMerge = null;
+  el.btnApplyMerge.disabled = true;
+  el.mergeReport.replaceChildren();
+
+  try {
+    const bundle = JSON.parse(await file.text());
+    const incoming = ContentPackage.parsePackageBundle(
+      bundle,
+      file.name.replace(/\.json$/i, "") || "incoming"
+    );
+    prepareCoeditMerge(incoming);
+  } catch (error) {
+    appendText(el.mergeReport, "p", "v-error", `Merge review failed: ${error.message}`);
+    setStatus(`Co-edit review failed: ${error.message}`);
+  } finally {
+    e.target.value = "";
+  }
+}
+
+function prepareCoeditMerge(incoming) {
+  if (!state.baseManifest || !state.baseDocuments || !state.baseFingerprint) {
+    throw new Error("Load a base package before reviewing co-edited content.");
+  }
+  if (incoming.manifest.packId !== state.manifest.packId ||
+      incoming.manifest.schemaVersion !== state.manifest.schemaVersion) {
+    throw new Error("Incoming bundle must have the same packId and schemaVersion.");
+  }
+  const baseManifestFingerprint = ContentPackage.fingerprintPackage(state.baseManifest, {});
+  if (ContentPackage.fingerprintPackage(state.manifest, {}) !== baseManifestFingerprint ||
+      ContentPackage.fingerprintPackage(incoming.manifest, {}) !== baseManifestFingerprint) {
+    throw new Error("Manifest metadata changed in one branch; reconcile package metadata manually before merging.");
+  }
+  if (incoming.bundleMeta?.sourceFingerprint !== state.baseFingerprint) {
+    throw new Error("Incoming bundle does not identify the currently loaded shared base. Export both branches from the same base package.");
+  }
+
+  const baseFiles = [...state.baseManifest.files].sort();
+  const incomingFiles = [...incoming.manifest.files].sort();
+  if (JSON.stringify(baseFiles) !== JSON.stringify(incomingFiles)) {
+    throw new Error("Incoming bundle has a different manifest file list; reconcile package structure manually before merging.");
+  }
+
+  const result = ContentMerge.mergePackageDocuments(
+    state.baseDocuments,
+    state.documents,
+    incoming.documents
+  );
+  el.mergeSummary.textContent =
+    `Shared base ${state.baseFingerprint} · ` +
+    `${result.localChanges.length} local path changes · ${result.incomingChanges.length} incoming path changes`;
+  el.mergeReport.replaceChildren();
+  appendChangeList(el.mergeReport, "Local edits", result.localChanges);
+  appendChangeList(el.mergeReport, "Incoming edits", result.incomingChanges);
+
+  if (result.conflicts.length) {
+    appendText(el.mergeReport, "h3", "", `${result.conflicts.length} conflict(s) block this merge`);
+    const list = document.createElement("ul");
+    for (const conflict of result.conflicts) {
+      const item = document.createElement("li");
+      item.textContent = `${conflict.path}: ${conflict.reason}`;
+      if (conflict.fromId) {
+        item.textContent += ` Old ID "${conflict.fromId}"; possible new ID(s): ${(conflict.toIds || []).join(", ") || "none detected"}.`;
+      }
+      if (conflict.references?.length) {
+        item.textContent += ` Known references: ${conflict.references.join(", ")}.`;
+      }
+      if (conflict.local !== undefined || conflict.incoming !== undefined) {
+        item.textContent += ` Local: ${conflict.local}; incoming: ${conflict.incoming}.`;
+      }
+      list.appendChild(item);
+    }
+    el.mergeReport.appendChild(list);
+    el.btnApplyMerge.disabled = true;
+    setStatus(`Co-edit merge blocked by ${result.conflicts.length} conflict(s).`);
+    return;
+  }
+
+  const entries = [
+    { path: "manifest.json", text: JSON.stringify(state.manifest) },
+    ...state.manifest.files.map(filePath => ({
+      path: filePath,
+      text: JSON.stringify(result.documents[filePath])
+    }))
+  ];
+  const mergedPackage = ContentPackage.parsePackage(entries, state.packageName);
+  const validation = validatePackage(mergedPackage);
+  if (!validation.ok) {
+    appendText(el.mergeReport, "h3", "v-error", "Merged package validation failed");
+    const list = document.createElement("ul");
+    for (const message of validation.messages.filter(item => item.level === "error")) {
+      appendText(list, "li", "", message.text);
+    }
+    el.mergeReport.appendChild(list);
+    el.btnApplyMerge.disabled = true;
+    setStatus("Co-edit merge blocked: the merged package is invalid.");
+    return;
+  }
+
+  state.pendingMerge = mergedPackage;
+  el.btnApplyMerge.disabled = false;
+  appendText(el.mergeReport, "p", "v-ok", "Conflict-free merge passed package validation. Review the changes, then explicitly apply.");
+  setStatus("Co-edit merge ready for human approval.");
+}
+
+function appendChangeList(parent, title, paths) {
+  appendText(parent, "h3", "", `${title} (${paths.length})`);
+  if (!paths.length) {
+    appendText(parent, "p", "muted", "No changes.");
+    return;
+  }
+  const list = document.createElement("ul");
+  for (const path of paths) appendText(list, "li", "", path);
+  parent.appendChild(list);
+}
+
+function applyCoeditMerge() {
+  if (!state.pendingMerge) return;
+  if (!window.confirm("Apply this validated merge? The merged package becomes the new shared base.")) {
+    setStatus("Co-edit merge cancelled; current package was kept.");
+    return;
+  }
+  const merged = state.pendingMerge;
+  installPackage(merged, { skipDirtyConfirmation: true });
+  markDirty();
+  appendText(el.mergeReport, "p", "v-ok", "Validated merge applied. Export this package before starting another co-edit round.");
+  setStatus("Co-edit merge applied; export the package to share the new base.");
+}
+
+function installPackage(loaded, { skipDirtyConfirmation = false } = {}) {
+  if (!skipDirtyConfirmation && state.dirty && !window.confirm("Discard unsaved package changes and load another package?")) {
     setStatus("Package load cancelled; current changes were kept.");
     return;
   }
@@ -176,6 +325,10 @@ function installPackage(loaded) {
   state.npcs = loaded.npcs;
   state.locales = loaded.locales;
   state.assets = loaded.assets;
+  state.baseManifest = cloneJson(loaded.manifest);
+  state.baseDocuments = cloneJson(loaded.documents);
+  state.baseFingerprint = ContentPackage.fingerprintPackage(state.baseManifest, state.baseDocuments);
+  state.pendingMerge = null;
   state.currentType = "stories";
   state.currentId = null;
   resetPreview(Object.keys(state.stories)[0] || null);
@@ -184,6 +337,8 @@ function installPackage(loaded) {
   el.btnSave.disabled = false;
   el.btnExportFolder.disabled = typeof window.showDirectoryPicker !== "function";
   el.btnValidate.disabled = false;
+  el.btnOpenMergeBundle.disabled = false;
+  el.btnApplyMerge.disabled = true;
   updateNewEntityButton();
 
   $$("#entity-tabs .tab").forEach(tab => tab.classList.toggle("active", tab.dataset.type === "stories"));
@@ -191,6 +346,7 @@ function installPackage(loaded) {
   renderEntityList();
   renderInspector();
   refreshRawJson();
+  renderCoeditSummary();
   setStatus(
     `Loaded "${loaded.packageName}" · ${Object.keys(state.documents).length} manifest files, ` +
     `${Object.keys(state.stories).length} stories, ${(state.resources.resources || []).length} resources, ` +
@@ -214,6 +370,7 @@ function renderEntityList() {
     el.entityList.appendChild(div);
   }
   renderEntityTable();
+  renderEventRules();
 }
 
 function getEntityItems(type) {
@@ -330,6 +487,135 @@ function renderEntityTable() {
   }
   table.appendChild(body);
   el.entityTable.appendChild(table);
+}
+
+function renderEventRules() {
+  if (!el.eventRulesTable) return;
+  const allRules = state.rules.rules || [];
+  const query = String(el.eventRuleSearch.value || "").trim().toLowerCase();
+  const rules = allRules.filter(rule => {
+    const searchable = [
+      rule.id,
+      describeRuleTrigger(rule.trigger),
+      describeRuleCondition(rule.when),
+      ...(rule.effects || []).map(describeRuleEffect)
+    ].join(" ").toLowerCase();
+    return searchable.includes(query);
+  });
+  el.eventRuleCount.textContent = query
+    ? `${rules.length} of ${allRules.length} rules`
+    : `${allRules.length} rules`;
+  el.eventRulesTable.replaceChildren();
+
+  if (!rules.length) {
+    appendText(
+      el.eventRulesTable,
+      "p",
+      "muted",
+      allRules.length ? "No rules match this filter." : "No event rules in this package."
+    );
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.className = "entity-table event-rule-table";
+  const header = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["Rule", "Trigger", "Condition", "Effects"]) {
+    const cell = document.createElement("th");
+    cell.scope = "col";
+    cell.textContent = label;
+    headerRow.appendChild(cell);
+  }
+  header.appendChild(headerRow);
+  table.appendChild(header);
+
+  const body = document.createElement("tbody");
+  for (const rule of rules) {
+    const row = document.createElement("tr");
+    if (state.currentType === "rules" && rule.id === state.currentId) row.className = "selected";
+    row.tabIndex = 0;
+    row.setAttribute("aria-label", `Inspect event rule ${rule.id}`);
+    const inspect = () => {
+      state.currentType = "rules";
+      $$("#entity-tabs .tab").forEach(tab => tab.classList.toggle("active", tab.dataset.type === "rules"));
+      updateNewEntityButton();
+      selectEntity(rule.id);
+    };
+    row.addEventListener("click", inspect);
+    row.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        inspect();
+      }
+    });
+    for (const value of [
+      rule.id,
+      describeRuleTrigger(rule.trigger),
+      describeRuleCondition(rule.when),
+      (rule.effects || []).map(describeRuleEffect).join("; ") || "No effects"
+    ]) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    }
+    body.appendChild(row);
+  }
+  table.appendChild(body);
+  el.eventRulesTable.appendChild(table);
+}
+
+function describeRuleTrigger(trigger) {
+  if (!trigger || typeof trigger !== "object" || typeof trigger.event !== "string") {
+    return "No trigger configured";
+  }
+  const parameters = Object.entries(trigger)
+    .filter(([key]) => key !== "event")
+    .map(([key, value]) => `${key}=${typeof value === "string" ? value : JSON.stringify(value)}`);
+  return parameters.length ? `${trigger.event} · ${parameters.join(", ")}` : trigger.event;
+}
+
+function describeRuleCondition(condition) {
+  if (!condition || typeof condition !== "object") return "Always";
+  if (Array.isArray(condition.all)) {
+    return condition.all.length
+      ? condition.all.map(describeRuleCondition).join(" AND ")
+      : "Always (empty all)";
+  }
+  if (Array.isArray(condition.any)) {
+    return condition.any.length
+      ? condition.any.map(describeRuleCondition).join(" OR ")
+      : "Never (empty any)";
+  }
+  if (Object.hasOwn(condition, "not")) return `NOT (${describeRuleCondition(condition.not)})`;
+  if (typeof condition.path === "string" && typeof condition.op === "string") {
+    if (condition.op === "exists") return `${condition.path} exists`;
+    if (condition.op === "not") return `${condition.path} is false`;
+    const operators = { eq: "=", neq: "≠", gt: ">", gte: "≥", lt: "<", lte: "≤" };
+    const operator = operators[condition.op];
+    if (operator) return `${condition.path} ${operator} ${JSON.stringify(condition.value)}`;
+  }
+  return `Unsupported condition: ${JSON.stringify(condition)}`;
+}
+
+function describeRuleEffect(effect) {
+  if (!effect || typeof effect !== "object") return `Unsupported effect: ${JSON.stringify(effect)}`;
+  switch (effect.op) {
+    case "resource.add":
+      return `Add ${effect.amount} ${effect.resourceId}`;
+    case "resource.spend":
+      return `Spend ${effect.amount} ${effect.resourceId}`;
+    case "relationship.adjust":
+      return `Adjust ${effect.characterId} relationship by ${effect.amount}`;
+    case "unlock":
+      return `Unlock ${effect.targetType} ${effect.targetId}`;
+    case "flag.set":
+      return `Set flag ${effect.flagId} to ${JSON.stringify(effect.value)}`;
+    case "event.record":
+      return `Record event ${effect.eventId || effect.event || "?"}`;
+    default:
+      return `Unsupported effect: ${JSON.stringify(effect)}`;
+  }
 }
 
 function selectEntity(id) {
@@ -532,6 +818,7 @@ function getWorkbenchPackage() {
   return {
     manifest: state.manifest,
     documents: state.documents,
+    baseFingerprint: state.baseFingerprint,
     entityFiles: state.entityFiles,
     locations: state.locations,
     combat: state.combat,
@@ -1138,8 +1425,30 @@ function getValidatedPackageBundle() {
 // Helpers
 // ---------------------------------------------------------------------------
 function markDirty(flag = true) {
+  if (flag && state.pendingMerge) {
+    state.pendingMerge = null;
+    el.btnApplyMerge.disabled = true;
+    el.mergeReport.replaceChildren();
+    appendText(el.mergeReport, "p", "v-warn", "Package changed after review; choose the incoming bundle again.");
+  }
   state.dirty = flag;
   updateDirty();
+}
+
+function renderCoeditSummary() {
+  if (!state.baseFingerprint) {
+    el.mergeSummary.textContent = "Load a package to begin a co-edit review.";
+    el.btnOpenMergeBundle.disabled = true;
+    el.btnApplyMerge.disabled = true;
+    return;
+  }
+  el.mergeSummary.textContent =
+    `Shared base: ${state.manifest.packId} · schema v${state.manifest.schemaVersion} · ${state.baseFingerprint}`;
+  el.btnOpenMergeBundle.disabled = false;
+}
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function updateDirty() {

@@ -9,7 +9,7 @@ vm.runInNewContext(
   fs.readFileSync(path.resolve(__dirname, "../web/js/package_loader.js"), "utf8"),
   loaderContext
 );
-const { parsePackage, parsePackageBundle, createPackageBundle } = loaderContext.ContentPackage;
+const { parsePackage, parsePackageBundle, createPackageBundle, fingerprintPackage } = loaderContext.ContentPackage;
 
 const fixtureRoot = path.resolve(__dirname, "../fixtures/spielplatz_demo");
 const manifest = JSON.parse(fs.readFileSync(path.join(fixtureRoot, "manifest.json"), "utf8"));
@@ -93,6 +93,28 @@ test("bundle import rejects missing, unsafe, and malformed content atomically", 
   const malformedBundle = structuredClone(bundle);
   malformedBundle["resources.json"] = "{";
   assert.throws(() => parsePackageBundle(malformedBundle), /Package file must contain an object: resources.json/);
+});
+
+test("co-edit bundles retain their shared-base fingerprint and detect content mismatch", () => {
+  const loaded = parsePackage(entries, "spielplatz_demo");
+  const baseFingerprint = fingerprintPackage(loaded.manifest, loaded.documents);
+  const branchDocuments = structuredClone(loaded.documents);
+  branchDocuments["resources.json"].resources[0].initialAmount = 2;
+  const bundle = createPackageBundle({
+    ...loaded,
+    documents: branchDocuments,
+    baseFingerprint
+  });
+
+  assert.equal(bundle._meta.sourceFingerprint, baseFingerprint);
+  assert.notEqual(bundle._meta.packageFingerprint, baseFingerprint);
+  const reopened = parsePackageBundle(bundle, "edited_branch");
+  assert.equal(reopened.bundleMeta.sourceFingerprint, baseFingerprint);
+  assert.equal(reopened.resources.resources[0].initialAmount, 2);
+
+  const altered = structuredClone(bundle);
+  altered["resources.json"].resources[0].initialAmount = 3;
+  assert.throws(() => parsePackageBundle(altered), /fingerprint does not match its content/);
 });
 
 test("package export refuses a manifest file that is absent from loaded documents", () => {

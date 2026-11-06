@@ -113,7 +113,23 @@
       if (!Object.hasOwn(bundle, filePath)) throw new Error(`Package bundle is missing manifest file: ${filePath}`);
       entries.push({ path: filePath, text: JSON.stringify(bundle[filePath]) });
     }
-    return parsePackage(entries, packageName);
+    const loaded = parsePackage(entries, packageName);
+    if (bundle._meta !== undefined) {
+      if (!bundle._meta || typeof bundle._meta !== "object" || Array.isArray(bundle._meta)) {
+        throw new Error("Package bundle _meta must contain an object");
+      }
+      const { packageFingerprint, sourceFingerprint } = bundle._meta;
+      if (packageFingerprint &&
+          packageFingerprint !== fingerprintPackage(loaded.manifest, loaded.documents)) {
+        throw new Error("Package bundle fingerprint does not match its content");
+      }
+      loaded.bundleMeta = {
+        format: bundle._meta.format,
+        packageFingerprint,
+        sourceFingerprint
+      };
+    }
+    return loaded;
   }
 
   function createPackageBundle(pkg) {
@@ -125,7 +141,9 @@
       _meta: {
         exportedAt: new Date().toISOString(),
         tool: "Lichtwald Content Inspector v0.2",
-        format: "lichtwald-package-bundle-v1"
+        format: "lichtwald-package-bundle-v1",
+        sourceFingerprint: pkg.baseFingerprint ||
+          fingerprintPackage(pkg.manifest, pkg.documents)
       },
       "manifest.json": JSON.parse(JSON.stringify(pkg.manifest))
     };
@@ -140,10 +158,32 @@
       }
       bundle[filePath] = JSON.parse(JSON.stringify(pkg.documents[filePath]));
     }
+    bundle._meta.packageFingerprint = fingerprintPackage(pkg.manifest, pkg.documents);
     return bundle;
   }
 
-  const api = { parsePackage, parsePackageBundle, createPackageBundle };
+  function fingerprintPackage(manifest, documents) {
+    const orderedDocuments = Object.keys(documents || {}).sort().map(filePath =>
+      [filePath, documents[filePath]]
+    );
+    const text = JSON.stringify(canonicalize({ manifest, documents: orderedDocuments }));
+    let hash = 0xcbf29ce484222325n;
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= BigInt(text.charCodeAt(index));
+      hash = BigInt.asUintN(64, hash * 0x100000001b3n);
+    }
+    return `fnv1a64:${hash.toString(16).padStart(16, "0")}`;
+  }
+
+  function canonicalize(value) {
+    if (Array.isArray(value)) return value.map(canonicalize);
+    if (!value || typeof value !== "object") return value;
+    return Object.fromEntries(
+      Object.keys(value).sort().map(key => [key, canonicalize(value[key])])
+    );
+  }
+
+  const api = { parsePackage, parsePackageBundle, createPackageBundle, fingerprintPackage };
   global.ContentPackage = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(globalThis);

@@ -34,6 +34,7 @@ lichtwald_content_inspector/
 │   ├── css/app.css
 │   └── js/
 │       ├── package_loader.js
+│       ├── merge.js
 │       ├── app.js
 │       ├── schema.js
 │       ├── validator.js
@@ -42,7 +43,9 @@ lichtwald_content_inspector/
 └── tests/
     ├── f1-package-contract.test.cjs
     ├── package-loader.test.cjs
-    └── app-entity-edit.test.cjs
+    ├── app-entity-edit.test.cjs
+    ├── coedit-merge.test.cjs
+    └── workbench-godot-export.test.cjs
 ```
 
 ---
@@ -69,10 +72,22 @@ Or just open `index.html` directly in a Chromium-based browser (Folder load work
 5. **Preview** localized story/comic panels, illustration briefs, linked dialogue, choices, conditions, and projected effects. Preview-only resource values can be adjusted to see when a gated option becomes available; this never edits package or game data.
 6. **Validate** structurally (IDs, required fields, cross-domain references, and allow-listed effects).
 7. **Graph** views: Story graph (nodes + transitions/choices) and cross-domain dependency graph with source paths.
-8. **Create** stories, resources, NPCs, and rules from templates; new story/NPC files are registered in the manifest, while NPCs are added to an existing NPC document when available. Unsupported tabs keep creation disabled.
-9. **Export** a validated JSON bundle and reopen it in the workbench, or write each manifest-listed JSON into a new package folder without overwriting an existing export.
+8. **Review event rules** as a trigger → condition → effects matrix; filter by content and select a rule to inspect its JSON.
+9. **Co-edit** by loading two branches from the same package base; review semantic changes, merge non-overlapping edits, validate, and explicitly approve before applying. Conflicts and possible ID renames block the merge and report known references.
+10. **Create** stories, resources, NPCs, and rules from templates; new story/NPC files are registered in the manifest, while NPCs are added to an existing NPC document when available. Unsupported tabs keep creation disabled.
+11. **Export** a validated JSON bundle and reopen it in the workbench, or write each manifest-listed JSON into a new package folder without overwriting an existing export.
 
 Folder export uses the File System Access API. It creates a new timestamped subfolder inside a user-selected destination, writes the manifest plus every listed JSON document, and does not clear the modified indicator unless every file is written successfully. Browsers without that API can still use the validated bundle export/import.
+
+Co-edit bundles carry a deterministic content fingerprint and the original shared-base fingerprint. These identify accidental mismatches but are not cryptographic or proof of authorship. Co-edit currently requires identical manifest file lists; adding/removing package files must be reconciled manually. Candidate merges are validated before the explicit apply action, and a successful apply establishes a new shared base.
+
+### F7/F8 review walkthrough
+
+1. Load `fixtures/spielplatz_demo/` and use the story graph plus Preview to answer what can happen next.
+2. Set Preview's Light Drops to `0` and `1`; explain the locked choice at `0` and what changes when it becomes available.
+3. Read the projected direct and triggered effects, then use Event Rules to trace a trigger to its effects.
+4. To exercise co-editing, open the same base package in two workbench pages, change a dialogue locale string in one and a resource value in the other, export both bundles, then merge the incoming bundle from the Co-edit view.
+5. Also try changing the same field on both branches and renaming a referenced ID; verify conflicts block application and report paths. Record reviewer role, answers, and confusing points in the Phase C tracker.
 
 ---
 
@@ -99,7 +114,7 @@ my_package/
 
 Player-facing entity fields reference localized `textKey`s in locale files; visible resources, locations, story/dialogue panels, NPCs, and opponents reference assets declared in `assets.json`. Placeholder assets have an art brief and no image path. Godot will later load a validated package via the Phase D JSON loader.
 
-The browser UI (v0.2) now browses and raw-edits every fixture domain, including `combat.json`, `locations.json`, locale strings, and asset entries. Its dynamic table lists all entities in the selected domain and synchronizes row selection with the inspector and Raw JSON views. Raw editing retains the source manifest path and stable IDs. Stories, resources, NPCs, and rules can be created from templates and persist through the manifest-backed package. The read-only preview shows localized illustrated story/dialogue panels, choices, condition availability against sample resource values, and projected effects. Bundle import/export and validated, non-overwriting folder export are available. Validation and the dependency graph cover the F1 cross-domain references, and graph edges retain source paths for inspection. Run `node --test "tests/*.test.cjs"` from this workbench directory to check the fixture, loader, editing, validation, graph, runtime feasibility, and exported-package Godot boundary. The Godot integration test skips when Godot is unavailable. Passing those tests does not mean the Godot runtime already supports the full contract.
+The browser UI (v0.2) now browses and raw-edits every fixture domain, including `combat.json`, `locations.json`, locale strings, and asset entries. Its dynamic table lists all entities in the selected domain and synchronizes row selection with the inspector and Raw JSON views. The Event Rules view makes triggers, conditions, and effects readable, filterable, and linked to the rule inspector. Raw editing retains the source manifest path and stable IDs. Stories, resources, NPCs, and rules can be created from templates and persist through the manifest-backed package. The read-only preview shows localized illustrated story/dialogue panels, choices, condition availability against sample resource values, and projected effects. Co-edit review performs a conservative three-way merge, reports semantic changes and known references to possible renamed IDs, blocks conflicts, and validates before apply. Bundle import/export and validated, non-overwriting folder export are available. Validation and the dependency graph cover the F1 cross-domain references, and graph edges retain source paths for inspection. Run `node --test "tests/*.test.cjs"` from this workbench directory to check the fixture, loader, editing, validation, graph, runtime feasibility, co-edit merge, and exported-package Godot boundary. The Godot integration test skips when Godot is unavailable. Passing those tests does not mean the Godot runtime already supports the full contract.
 
 ---
 

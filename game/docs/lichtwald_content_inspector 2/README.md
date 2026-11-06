@@ -31,6 +31,8 @@ The loader test proves package files are parsed and retained. The entity-editor 
 
 Use **Open Bundle** to reopen an exported bundle. **Export Bundle** is the portable single-file format; **Export Folder** writes `manifest.json` and each listed document under a new timestamped directory, without overwriting an earlier export. Folder export requires a browser with the File System Access API and is blocked when package validation reports errors.
 
+The **Co-edit** view compares the current package with an edited bundle against the base package loaded in this workbench. It merges non-overlapping fields and stable-ID entities, validates the result, and requires explicit approval before applying. Divergent edits, possible entity-ID renames, or package file-list changes block application and show paths/references for manual resolution. Bundle fingerprints detect accidental base/content mismatches; they are non-cryptographic identifiers, not authentication.
+
 ---
 
 ## Package layout (Godot-importable)
@@ -62,7 +64,9 @@ The [F1 fixture](./fixtures/spielplatz_demo/) demonstrates the current planning 
 - Manifest-backed creation templates for stories, resources, NPCs, and rules; new file-based content is added to the package manifest
 - Structural and F1 cross-domain reference validation
 - Story graph + cross-domain dependency graph with source paths on edge hover
+- Event-rule matrix showing trigger, condition, and human-readable effects, with filtering and inspector selection
 - Read-only comic/story preview with localized panel text, illustration briefs, dialogue choices, locked conditions, and projected direct/triggered effects
+- Three-way co-edit review with stable-ID entity merging, semantic change paths, validation, and explicit conflict blocking
 - Export and reopen validated package bundles
 - Export validated multi-file packages into new, non-overwriting folders (File System Access API browsers)
 - Exercise a workbench-exported package folder through the Godot F2 loader and round-trip boundary when Godot is installed
