@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "name": "Lichtwald – Mission 01: Der kaputte Spielplatz",
+  "description": "First Lichtwald mission as a JSON package: Hannah and the friends rebuild the broken playground. Story, resources, NPCs, rules and the child-adapted Schatten-der-Eile encounter live entirely in this package.",
+  "files": [
+    "resources.json",
+    "locations.json",
+    "rules.json",
+    "combat.json",
+    "assets.json",
+    "stories/story_mission_spielplatz.json",
+    "npcs/hannah.json",
+    "npcs/juan.json",
+    "npcs/lina.json",
+    "npcs/tobi.json",
+    "npcs/oma_linde.json",
+    "locales/de.json",
+    "locales/en.json"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "locations": [
+    {
+      "id": "spielplatz",
+      "nameKey": "location.spielplatz.name",
+      "backgroundAssetId": "bg_spielplatz",
+      "availableWhen": { "all": [] },
+      "producerIds": [],
+      "recipeIds": [],
+      "encounterIds": ["encounter_schatten_der_eile"]
+    }
+  ]
+}
