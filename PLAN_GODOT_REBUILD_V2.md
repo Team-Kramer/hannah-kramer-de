@@ -938,6 +938,7 @@ This plan does not itself execute later phases. Each phase starts only after the
 ### Phase E — Migrate scattered content-specific rules
 
 - [ ] **PE-01** Move approved content-specific triggers, unlocks, dialogue consequences, resource effects, and encounter content from ID-specific branches into declarative JSON/capability data.
+  - [x] **PE-01a** Port the validated JSON rule engine into the production project so the game runtime can load content packages. `game/global/engine/` now holds `condition_dsl.gd`, `event_engine.gd`, and `package_loader.gd` (byte-identical to the F2-validated versions except the one internal preload repointed to `res://global/engine/condition_dsl.gd`). Evidence: headless smoke script in the production project (`godot --headless --path . --script`) loads all three scripts, builds `initial_state` from a minimal package, and dispatches a `resource.totalAtLeast` event that fires a rule and sets a flag — `ENGINE SMOKE PASS`, 0 script errors.
 - [ ] **PE-02** Keep the event bus and generic handlers; dispatch typed events to generic condition/effect handlers.
 - [ ] **PE-03** Keep genuinely novel mechanics as small documented capabilities; JSON may configure them but may not run arbitrary code.
 - [ ] **PE-04** Complete F9; compare old/new behavior on identical recorded inputs and save snapshots before deleting a legacy branch.
