@@ -1,5 +1,7 @@
 # Hannahs Lichtwald — Post-Strip Godot Rebuild Checklist
 
+> **Superseded for future planning by [PLAN_GODOT_REBUILD_V2.md](./PLAN_GODOT_REBUILD_V2.md).** This file and its implementation remain preserved as a historical record. Do not treat its checked tasks, fixed Mission 01 design, standalone mission screen, or separate `mission_state` as current direction without agreement under V2.
+
 **Updated:** 2026-11-05
 **Overall status:** In progress — Mission 01 intro/listening/decision/outcome flow, vote behavior, save-state persistence, and resume/idempotent-retry are implemented (headless-verified); world resources, moderation cost, art, and release QA remain.
 **Scope:** Rebuild the stripped Godot engine into a warm incremental-and-decision game: a playable Mission 01 first, with a growing world, meaningful resource changes, and later missions.
