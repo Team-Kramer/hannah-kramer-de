@@ -76,7 +76,7 @@ function initialState(catalog = catalogFor()) {
       combatEncounters: Object.fromEntries([...catalog.encounters.keys()].map((id) => [id, false]))
     },
     conversationChoices: {},
-    events: { processed: [], firedOnceRules: [], log: [] },
+    events: { processed: [], firedOnceRules: [], log: [], recorded: [] },
     combatRequests: []
   };
 }
@@ -236,6 +236,12 @@ function applyEffects(effects, state, catalog = catalogFor()) {
         if (!next.unlocks.combatEncounters[effect.encounterId]) throw new Error(`combat encounter is locked: ${effect.encounterId}`);
         if (!evaluateCondition(encounter.availableWhen, next, catalog)) throw new Error(`combat encounter is unavailable: ${effect.encounterId}`);
         next.combatRequests.push({ encounterId: effect.encounterId, combatProfileId: encounter.combatProfileId });
+        break;
+      }
+      case "event.record": {
+        assertOnlyKeys(effect, ["op", "eventId"], `effect ${effect.op}`);
+        if (typeof effect.eventId !== "string" || !effect.eventId) throw new Error("event.record requires a non-empty eventId");
+        next.events.recorded.push(effect.eventId);
         break;
       }
       default:
@@ -574,6 +580,18 @@ test("resource, relationship, flag, and unlock effects apply to the shared state
   assert.equal(state.unlocks.recipes.make_lichttropfen, true);
   assert.equal(state.unlocks.producers.gather_holz, true);
   assert.equal(state.unlocks.combatEncounters.playground_shadow, true);
+});
+
+test("event.record appends a stable event id to the shared state", () => {
+  const state = initialState();
+  applyEffects([{ op: "event.record", eventId: "first_essence" }], state);
+  assert.deepEqual(state.events.recorded, ["first_essence"]);
+  applyEffects([{ op: "event.record", eventId: "first_spirit" }], state);
+  assert.deepEqual(state.events.recorded, ["first_essence", "first_spirit"]);
+  const original = structuredClone(state);
+  assert.throws(() => applyEffects([{ op: "event.record", eventId: "" }], state), /non-empty eventId/);
+  assert.throws(() => applyEffects([{ op: "event.record", eventId: "x", extra: 1 }], state), /unsupported fields/);
+  assert.deepEqual(state, original);
 });
 
 test("all effects validate before mutation; invalid operations and bounds leave state unchanged", () => {

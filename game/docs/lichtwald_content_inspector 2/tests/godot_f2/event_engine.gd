@@ -71,7 +71,7 @@ static func initial_state(pkg: Dictionary) -> Dictionary:
 		"story": { "visited": story_nodes, "runtime": { "currentNodeId": null, "currentDialogueId": null, "currentDialogueNodeId": null, "pendingInput": null, "visits": [], "appliedOutcomeNodeIds": [], "processedChoiceInputs": [] } },
 		"unlocks": { "recipes": unlocks_recipes, "producers": unlocks_producers, "combatEncounters": unlocks_encounters },
 		"conversationChoices": {},
-		"events": { "processed": [], "firedOnceRules": [], "log": [] },
+		"events": { "processed": [], "firedOnceRules": [], "log": [], "recorded": [] },
 		"combatRequests": [],
 	}
 
@@ -246,6 +246,14 @@ static func _apply_single_effect(effect: Dictionary, state: Dictionary, catalog:
 			if not availability["value"]:
 				return { "ok": false, "error": "combat encounter is unavailable: %s" % encounter_id }
 			state["combatRequests"].append({ "encounterId": encounter_id, "combatProfileId": str(encounter.get("combatProfileId")) })
+			return { "ok": true, "error": "" }
+		"event.record":
+			if not _only_keys(effect, ["op", "eventId"]):
+				return { "ok": false, "error": "effect %s contains missing or unsupported fields" % op }
+			var event_id: String = str(effect.get("eventId"))
+			if event_id == "":
+				return { "ok": false, "error": "event.record requires a non-empty eventId" }
+			state["events"]["recorded"].append(event_id)
 			return { "ok": true, "error": "" }
 		_:
 			return { "ok": false, "error": "effect operation is not allow-listed: %s" % op }

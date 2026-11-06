@@ -555,6 +555,26 @@ func _test_event_engine() -> void:
 	_expect(no_match.get("ok", true) and no_match.get("firedRuleIds").is_empty(), "engine no-match event fires no rules")
 	_expect(state["resources"]["lichttropfen"] == 1, "engine applied the no-match delta")
 
+	# event.record appends a stable event id to the shared state.
+	var record_state: Dictionary = EventEngine.initial_state(pkg)
+	var record_ok: Dictionary = EventEngine.apply_effects(
+		[{ "op": "event.record", "eventId": "first_essence" }], record_state, catalog, pkg
+	)
+	_expect(record_ok["ok"], "engine event.record applies")
+	_expect(record_state["events"]["recorded"] == ["first_essence"], "engine event.record appends the event id")
+	var record_ok2: Dictionary = EventEngine.apply_effects(
+		[{ "op": "event.record", "eventId": "first_spirit" }], record_state, catalog, pkg
+	)
+	_expect(record_ok2["ok"] and record_state["events"]["recorded"] == ["first_essence", "first_spirit"], "engine event.record appends in order")
+	var record_bad: Dictionary = EventEngine.apply_effects(
+		[{ "op": "event.record", "eventId": "" }], record_state, catalog, pkg
+	)
+	_expect(not record_bad["ok"], "engine event.record rejects an empty eventId")
+	var record_bad_keys: Dictionary = EventEngine.apply_effects(
+		[{ "op": "event.record", "eventId": "x", "extra": 1 }], record_state, catalog, pkg
+	)
+	_expect(not record_bad_keys["ok"], "engine event.record rejects unsupported fields")
+
 
 func _test_package_reloader() -> void:
 	var valid_dir := "user://f2_reload_valid"

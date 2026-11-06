@@ -489,10 +489,10 @@ The scratch save was removed and the original in-memory save state restored. Thi
 
 #### F9 — Legacy migration boundary
 
-- [ ] Inventory code branches keyed to content IDs and map each to an extracted rule or intentionally retained mechanic capability.
+- [x] Inventory code branches keyed to content IDs and map each to an extracted rule or intentionally retained mechanic capability.
 - [ ] Run the same fixture and selected legacy traces through old/new paths.
 - [ ] Confirm every migrated branch has a JSON representation and parity evidence; classify remaining ID-specific code as an intentional mechanic, not hidden content authoring.
-- **Evidence:** `TBD` (branch mapping and parity report).
+- **Evidence:** Step 1 complete — `game/docs/lichtwald_content_inspector 2/F9_LEGACY_BRANCH_MAPPING.md` maps every `unlock_controller.gd` branch to (a) JSON rule / (b) retained mechanic / (c) deferred. Vocabulary decision: `event.record` implemented in both engines (Godot `event_engine.gd` + Node `f4-f6-runtime.test.cjs`), tested (Node 73/73, F2 PASS 0 script errors). No new trigger types or `unlock` targetTypes needed for the first story. Parity test (step 2) pending.
 
 **Feasibility exit:** F0–F9 results support the JSON file boundaries, reference model, condition/effect vocabulary, graph/event separation, and minimum editor flow. Only then commit to the production schema and workbench design. A failed gate is useful evidence and should change the design before scaling up.
 
