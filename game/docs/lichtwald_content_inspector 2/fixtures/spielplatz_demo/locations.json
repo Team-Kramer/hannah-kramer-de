@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "locations": [
+    {
+      "id": "lichtwald_spielplatz",
+      "nameKey": "location.lichtwald_spielplatz.name",
+      "backgroundAssetId": "location_spielplatz_background",
+      "availableWhen": {
+        "all": []
+      },
+      "producerIds": [
+        "gather_holz"
+      ],
+      "recipeIds": [
+        "make_lichttropfen"
+      ],
+      "encounterIds": [
+        "playground_shadow"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "locale": "de",
+  "strings": {
+    "story_spielplatz.title": "Der Spielplatz am Waldrand",
+    "story_spielplatz.opening.caption": "Am Rand des Waldes liegt ein alter Spielplatz. Dahinter zieht sich eine Bergkette bis zum Horizont.",
+    "story_spielplatz.talk_to_juan.caption": "Juan möchte gern mit den anderen Kindern spielen.",
+    "story_spielplatz.repair_choice.prompt": "Was könnte den Kindern helfen?",
+    "story_spielplatz.repair_choice.build_path.label": "Einen glatten Weg bauen",
+    "story_spielplatz.repair_choice.gather_first.label": "Erst noch Material sammeln",
+    "story_spielplatz.path_repaired.caption": "Gemeinsam bauen die Kinder einen glatten Weg. Jetzt können alle zum Spielplatz.",
+    "story_spielplatz.waited.caption": "Die Kinder machen einen Plan und sammeln erst noch, was sie brauchen.",
+    "location.lichtwald_spielplatz.name": "Spielplatz am Waldrand",
+    "resource.holz.name": "Holz",
+    "resource.lichttropfen.name": "Lichttropfen",
+    "recipe.make_lichttropfen.name": "Lichttropfen herstellen",
+    "npc.juan.name": "Juan",
+    "conversation.juan_playground.wish.text": "Ich würde gern mitspielen. Der Eingang ist für meinen Rollstuhl aber zu holprig.",
+    "conversation.juan_playground.wish.listen.label": "Juan aufmerksam zuhören",
+    "conversation.juan_playground.wish.distract.label": "Das Thema wechseln",
+    "conversation.juan_playground.thanks.text": "Danke, dass du mir zugehört hast. Vielleicht finden wir gemeinsam eine Lösung.",
+    "conversation.juan_playground.later.text": "Okay. Ich würde trotzdem gern mit euch spielen.",
+    "enemy.knotted_shadow.name": "Knotenschatten",
+    "enemy.knotted_shadow.description": "Ein kleiner Schattenknoten versucht, den Weg zum Spielplatz zu versperren.",
+    "encounter.playground_shadow.name": "Der Schatten am Spielplatz",
+    "encounter.playground_shadow.victory": "Gemeinsam lösen die Kinder den Schattenknoten und machen den Weg wieder frei.",
+    "encounter.playground_shadow.defeat": "Die Kinder ziehen sich gemeinsam an einen sicheren Ort zurück und können es später noch einmal versuchen."
+  }
+}

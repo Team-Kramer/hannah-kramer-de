@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "enemies": [
+    {
+      "id": "knotted_shadow",
+      "nameKey": "enemy.knotted_shadow.name",
+      "descriptionKey": "enemy.knotted_shadow.description",
+      "illustrationAssetId": "enemy_knotted_shadow",
+      "alignment": "evil"
+    }
+  ],
+  "encounters": [
+    {
+      "id": "playground_shadow",
+      "enemyId": "knotted_shadow",
+      "locationId": "lichtwald_spielplatz",
+      "nameKey": "encounter.playground_shadow.name",
+      "illustrationAssetId": "encounter_playground_shadow",
+      "combatProfileId": "turn_based_core",
+      "availableWhen": {
+        "all": [
+          {
+            "path": "flags.encounter_playground_shadow_unlocked",
+            "op": "eq",
+            "value": true
+          }
+        ]
+      },
+      "victoryTextKey": "encounter.playground_shadow.victory",
+      "defeatTextKey": "encounter.playground_shadow.defeat",
+      "effects": [
+        {
+          "op": "resource.add",
+          "resourceId": "holz",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

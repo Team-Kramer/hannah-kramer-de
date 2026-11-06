@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "locale": "en",
+  "strings": {
+    "story_spielplatz.title": "The Playground at the Forest's Edge",
+    "story_spielplatz.opening.caption": "At the edge of the forest stands an old playground. Beyond it, a mountain range stretches to the horizon.",
+    "story_spielplatz.talk_to_juan.caption": "Juan would like to play with the other children.",
+    "story_spielplatz.repair_choice.prompt": "What could help the children?",
+    "story_spielplatz.repair_choice.build_path.label": "Build a smooth path",
+    "story_spielplatz.repair_choice.gather_first.label": "Gather materials first",
+    "story_spielplatz.path_repaired.caption": "The children build a smooth path together. Now everyone can reach the playground.",
+    "story_spielplatz.waited.caption": "The children make a plan and gather what they need first.",
+    "location.lichtwald_spielplatz.name": "Forest-edge playground",
+    "resource.holz.name": "Wood",
+    "resource.lichttropfen.name": "Light Drops",
+    "recipe.make_lichttropfen.name": "Make Light Drops",
+    "npc.juan.name": "Juan",
+    "conversation.juan_playground.wish.text": "I'd like to play too. The entrance is too bumpy for my wheelchair.",
+    "conversation.juan_playground.wish.listen.label": "Listen carefully to Juan",
+    "conversation.juan_playground.wish.distract.label": "Change the subject",
+    "conversation.juan_playground.thanks.text": "Thanks for listening. Maybe we can find a solution together.",
+    "conversation.juan_playground.later.text": "Okay. I would still like to play with you.",
+    "enemy.knotted_shadow.name": "Knotted Shadow",
+    "enemy.knotted_shadow.description": "A small knot of shadow is trying to block the path to the playground.",
+    "encounter.playground_shadow.name": "The Shadow at the Playground",
+    "encounter.playground_shadow.victory": "Together, the children untie the shadow knot and clear the path.",
+    "encounter.playground_shadow.defeat": "The children move together to a safe place and can try again later."
+  }
+}
