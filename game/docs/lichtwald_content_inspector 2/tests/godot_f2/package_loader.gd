@@ -9,7 +9,7 @@ extends RefCounted
 ## that Godot's JSON round-trip requires.
 ##
 ## `load_package(dir)` returns { ok: bool, messages: Array[Dictionary],
-## catalog: Dictionary, documents: Dictionary }.
+## catalog: Dictionary, documents: Dictionary, assembled: Dictionary }.
 
 const MANIFEST_NAME := "manifest.json"
 
@@ -33,7 +33,7 @@ static func load_package(dir: String) -> Dictionary:
 
 	var manifest: Variant = _read_json(dir.path_join(MANIFEST_NAME), messages)
 	if manifest == null:
-		return { "ok": false, "messages": messages, "catalog": {}, "documents": {} }
+		return { "ok": false, "messages": messages, "catalog": {}, "documents": {}, "assembled": {} }
 	_add(messages, "ok", "Manifest present (packId=%s, schema=%s)" % [
 		str(manifest.get("packId", "?")), str(manifest.get("schemaVersion", "?"))
 	])
@@ -43,7 +43,9 @@ static func load_package(dir: String) -> Dictionary:
 	for file_path in manifest.get("files", []):
 		var document: Variant = _read_json(dir.path_join(String(file_path)), messages)
 		if document != null:
-			documents[String(file_path)] = document
+			# PB-02d: Godot's JSON parser widens integral numbers to floats;
+			# canonicalize so downstream consumers see proper integers.
+			documents[String(file_path)] = canonicalize_numeric_types(document)
 
 	var pkg := _assemble_package(manifest, documents)
 	var catalog := _build_catalogs(pkg, messages)
@@ -53,7 +55,7 @@ static func load_package(dir: String) -> Dictionary:
 		if message["level"] == "error":
 			ok = false
 
-	return { "ok": ok, "messages": messages, "catalog": catalog, "documents": documents }
+	return { "ok": ok, "messages": messages, "catalog": catalog, "documents": documents, "assembled": pkg }
 
 
 static func _read_json(path: String, messages: Array[Dictionary]) -> Variant:

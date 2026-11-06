@@ -63,6 +63,7 @@ class ResourceDefinition:
 const MAX_SAFE_INTEGER := 9007199254740991.0
 const PackageLoader := preload("res://package_loader.gd")
 const ConditionDsl := preload("res://condition_dsl.gd")
+const EventEngine := preload("res://event_engine.gd")
 
 var failures: Array[String] = []
 var fixture_root: String
@@ -104,6 +105,7 @@ func _run() -> void:
 		_test_package_contract_rejects_broken_package()
 		_test_numeric_canonicalization()
 		_test_condition_dsl()
+		_test_event_engine()
 
 	_finish()
 
@@ -470,6 +472,81 @@ func _test_condition_dsl() -> void:
 	_expect(ConditionDsl.compare_condition_value(2.0, "eq", 2)["value"] == true, "DSL eq treats 2.0 == 2 numerically")
 	_expect(ConditionDsl.compare_condition_value(2, "eq", true)["value"] == false, "DSL eq is strict across number/bool")
 	_expect(not ConditionDsl.compare_condition_value(2, "neq", 3)["ok"], "DSL rejects non-canonical op spelling")
+
+
+func _test_event_engine() -> void:
+	var result: Dictionary = PackageLoader.load_package(fixture_root)
+	if not result.ok:
+		_expect(false, "event engine: fixture package loads")
+		return
+	var pkg: Dictionary = result["assembled"]
+	var catalog: Dictionary = result["catalog"]
+	var rules: Array = pkg["rules"]["rules"]
+	var state: Dictionary = EventEngine.initial_state(pkg)
+
+	# Initial state is data-driven from the package.
+	_expect(state["resources"]["holz"] == 0 and state["resources"]["lichttropfen"] == 0, "engine initial resources from initialAmount")
+	_expect(state["relationships"]["juan"] == 0, "engine initial relationship from initialRelationship")
+	_expect(state["flags"]["encounter_playground_shadow_unlocked"] == false and state["flags"]["juan_listened"] == false, "engine flags derived from flag.set effects")
+	_expect(state["unlocks"]["recipes"]["make_lichttropfen"] == false and state["unlocks"]["combatEncounters"]["playground_shadow"] == false, "engine unlocks initialized false")
+	_expect(state["story"]["visited"]["opening"] == false, "engine story nodes initialized false")
+
+	# resource.totalAtLeast event: applying the delta must match the total,
+	# and the unlock_playground_options rule fires once.
+	var trace: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_holz_2", "type": "resource.totalAtLeast", "resourceId": "holz", "total": 2, "delta": 2 },
+		rules, state, catalog, pkg
+	)
+	_expect(trace.get("ok", true), "engine dispatches resource.totalAtLeast event")
+	_expect(trace.get("duplicate") == false, "engine first event is not a duplicate")
+	_expect(trace.get("firedRuleIds") == ["unlock_playground_options"], "engine fires the unlock rule")
+	_expect(state["resources"]["holz"] == 2, "engine applied the resource delta")
+	_expect(state["unlocks"]["recipes"]["make_lichttropfen"] == true, "engine unlocked the recipe")
+	_expect(state["unlocks"]["combatEncounters"]["playground_shadow"] == true, "engine unlocked the combat encounter")
+	_expect(state["flags"]["encounter_playground_shadow_unlocked"] == true, "engine set the unlock flag")
+	_expect(trace["resultingState"]["resources"]["holz"] == 2, "engine trace carries the resulting state")
+
+	# Duplicate eventId with the same payload is idempotent.
+	var dup: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_holz_2", "type": "resource.totalAtLeast", "resourceId": "holz", "total": 2, "delta": 2 },
+		rules, state, catalog, pkg
+	)
+	_expect(dup.get("duplicate") == true, "engine duplicate eventId is idempotent")
+	_expect(state["resources"]["holz"] == 2, "engine duplicate does not re-apply the delta")
+
+	# Reusing an eventId with a different payload is rejected.
+	var reused: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_holz_2", "type": "resource.totalAtLeast", "resourceId": "holz", "total": 3, "delta": 1 },
+		rules, state, catalog, pkg
+	)
+	_expect(not reused.get("ok", true), "engine rejects eventId reused with different payload")
+
+	# A total that does not match the applied delta is rejected.
+	var mismatch: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_holz_bad", "type": "resource.totalAtLeast", "resourceId": "holz", "total": 9, "delta": 1 },
+		rules, state, catalog, pkg
+	)
+	_expect(not mismatch.get("ok", true), "engine rejects resource event total/delta mismatch")
+
+	# conversation.choice event: juan_listened rule adjusts the relationship.
+	var conv: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_juan_listen", "type": "conversation.choice", "conversationId": "juan_playground", "choiceId": "listen" },
+		rules, state, catalog, pkg
+	)
+	_expect(conv.get("ok", true), "engine dispatches conversation.choice event")
+	_expect(conv.get("firedRuleIds") == ["juan_listened"], "engine fires the juan_listened rule")
+	_expect(state["relationships"]["juan"] == 1, "engine adjusted the relationship")
+	_expect(state["flags"]["juan_listened"] == true, "engine set the juan_listened flag")
+	_expect(state["conversationChoices"]["juan_playground"] == "listen", "engine recorded the conversation choice")
+
+	# An event with no matching rule (different resourceId) applies its delta
+	# but fires no rules.
+	var no_match: Dictionary = EventEngine.dispatch_event(
+		{ "eventId": "ev_licht_1", "type": "resource.totalAtLeast", "resourceId": "lichttropfen", "total": 1, "delta": 1 },
+		rules, state, catalog, pkg
+	)
+	_expect(no_match.get("ok", true) and no_match.get("firedRuleIds").is_empty(), "engine no-match event fires no rules")
+	_expect(state["resources"]["lichttropfen"] == 1, "engine applied the no-match delta")
 
 
 func _expect(condition: bool, message: String) -> void:
