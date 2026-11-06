@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "resources": [
+    {
+      "id": "stein",
+      "kind": "stock",
+      "nameKey": "resource.stein.name",
+      "initialAmount": 0,
+      "bounds": { "min": 0, "max": 999 }
+    },
+    {
+      "id": "lichttropfen",
+      "kind": "stock",
+      "nameKey": "resource.lichttropfen.name",
+      "initialAmount": 0,
+      "bounds": { "min": 0 }
+    }
+  ],
+  "producers": [
+    {
+      "id": "axe",
+      "kind": "playerAction",
+      "locationId": "test_clearing",
+      "outputs": { "stein": 1 },
+      "costs": {},
+      "cooldownSeconds": 0,
+      "maxUses": null,
+      "availableWhen": { "all": [] }
+    }
+  ],
+  "recipes": [],
+  "workerRoles": []
+}

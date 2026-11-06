@@ -82,7 +82,8 @@ func _dispatch(event: Dictionary) -> void:
 		_apply_effect(effect)
 
 
-func _apply_effect(effect: Dictionary) -> void:
+func _apply_effect(entry: Dictionary) -> void:
+	var effect: Dictionary = entry.get("effect", {})
 	var op: String = str(effect.get("op"))
 	match op:
 		"unlock":

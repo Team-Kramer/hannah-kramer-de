@@ -1,4 +1,4 @@
-[gd_scene load_steps=51 format=3 uid="uid://k0aqit1ex0lc"]
+[gd_scene load_steps=52 format=3 uid="uid://k0aqit1ex0lc"]
 
 [ext_resource type="Script" uid="uid://dyg23uxy8xno3" path="res://scenes/autostart/main/main.gd" id="1_u1kx3"]
 [ext_resource type="PackedScene" uid="uid://25a0pw7b7nky" path="res://scenes/controller/progress_button_controller/progress_button_controller.tscn" id="2_fcqyg"]
@@ -47,6 +47,7 @@
 [ext_resource type="PackedScene" uid="uid://b75kh4e41777c" path="res://scenes/autostart/main/reborn_ui/reborn_ui.tscn" id="40_cpuij"]
 [ext_resource type="Shader" uid="uid://blge33bwhmi53" path="res://resources/shader/cracked_glass/cracked_glass.gdshader" id="41_fakmo"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/language_toggle_de_en.tscn" id="50_toggle"]
+[ext_resource type="PackedScene" path="res://global/engine/rule_bridge.tscn" id="51_rubrg"]
 
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_pgw6q"]
@@ -86,6 +87,8 @@ worker_controller = NodePath("../WorkerController")
 
 [node name="UnlockController" parent="Controllers" instance=ExtResource("6_albwn")]
 sfx_unlock = ExtResource("7_lojif")
+
+[node name="RuleBridge" parent="Controllers" instance=ExtResource("51_rubrg")]
 
 [node name="SettingController" parent="Controllers" instance=ExtResource("7_jgdlg")]
 
