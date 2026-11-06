@@ -47,6 +47,7 @@ var enemy: Dictionary = {"level": "rabbit", "rabbit": {"damage": 0}}
 var metadata: Dictionary = {}
 var locale: String = "en"
 var _last_locale: String = "en"
+var _active_content_version: String = ""
 
 @onready var autosave_timer: Timer = %AutosaveTimer
 
@@ -57,6 +58,7 @@ var _last_locale: String = "en"
 
 func _ready() -> void:
 	default_save_data = _export_save_data()
+	_active_content_version = _get_active_content_version()
 
 	_load_save_files()
 	_connect_signals()
@@ -537,6 +539,7 @@ func _load_save_files() -> void:
 				print("__SKIP_SAVE_DATA: " + file_name)
 			continue
 		var save_data: Dictionary = _read(file_name)
+		_check_content_reset(save_data)
 		_check_backward_compatibility(save_data)
 		if Game.PARAMS["debug_logs"]:
 			print("__LOAD_SAVE_DATA: " + file_name)
@@ -566,6 +569,7 @@ func _export_save_data() -> Dictionary:
 	save_data["enemy"] = enemy
 	save_data["metadata"] = metadata
 	save_data["LOCALE"] = locale
+	save_data["content_version"] = _active_content_version
 	return save_data
 
 
@@ -719,6 +723,59 @@ func _sanitize_timezone(timezone: Dictionary) -> void:
 
 func _get_save_file_name(save_data: Dictionary) -> String:
 	return save_data["metadata"].get("save_file_name", "")
+
+
+## PF-02: content reset on content-version change.
+##
+## When the active content package's `contentVersion` differs from the version
+## a save was written under, the save's *content* state (resources, mission
+## state, workers, substances, events, unlocks, npc_events, enemy) is reset to
+## defaults so legacy IDs are never silently reinterpreted as new entities.
+## Player *settings* (settings, audio, effects, locale, metadata) are preserved.
+func _check_content_reset(save_data: Dictionary) -> void:
+	var active_version: String = _active_content_version
+	if active_version == "":
+		return
+	var saved_version: String = str(save_data.get("content_version", ""))
+	if saved_version == active_version:
+		return
+	if Game.PARAMS["debug_logs"]:
+		print("__CONTENT_RESET: save '%s' (%s) -> active '%s'" % [
+			save_data.get("metadata", {}).get("save_file_name", "?"), saved_version, active_version
+		])
+	_reset_content_state(save_data)
+
+
+## Read the active package's contentVersion ("" when no package is deployed).
+func _get_active_content_version() -> String:
+	var dir: String = "res://content/active"
+	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(dir)):
+		return ""
+	var manifest_path: String = dir.path_join("manifest.json")
+	if not FileAccess.file_exists(ProjectSettings.globalize_path(manifest_path)):
+		return ""
+	var file: FileAccess = FileAccess.open(manifest_path, FileAccess.READ)
+	if file == null:
+		return ""
+	var text: String = file.get_as_text()
+	file.close()
+	var parsed: Variant = JSON.parse_string(text)
+	if not (parsed is Dictionary):
+		return ""
+	return str(parsed.get("contentVersion", ""))
+
+
+## Replace content state with defaults, keeping player settings intact.
+func _reset_content_state(save_data: Dictionary) -> void:
+	var fresh: Dictionary = _export_save_data()
+	for key: String in [
+		"resources", "mission_state", "workers", "substances",
+		"events", "event_log", "resource_generator_unlocks",
+		"worker_role_unlocks", "tab_unlocks", "tab_levels",
+		"npc_events", "enemy",
+	]:
+		save_data[key] = fresh[key]
+	save_data["content_version"] = _active_content_version
 
 
 func _check_backward_compatibility(save_data: Dictionary) -> void:
