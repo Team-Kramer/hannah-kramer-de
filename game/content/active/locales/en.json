@@ -71,6 +71,8 @@
     "enemy.schatten_der_eile.description": "A grey shadow that grows when the children rush and do not listen to each other. It loves haste and forgotten wishes.",
     "encounter.schatten_der_eile.name": "The Shadow of Haste",
     "encounter.schatten_der_eile.victory": "You stand calm and firm. The Shadow of Haste loses its power and melts away like mist in the morning sun.",
-    "encounter.schatten_der_eile.defeat": "The shadow grows and whispers: Nothing is lost yet. Perhaps next time …"
+    "encounter.schatten_der_eile.defeat": "The shadow grows and whispers: Nothing is lost yet. Perhaps next time …",
+    "story.continue": "Continue",
+    "story.conversation_hint": "Choose a reply to continue."
   }
 }

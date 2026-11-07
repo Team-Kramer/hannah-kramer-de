@@ -71,6 +71,8 @@
     "enemy.schatten_der_eile.description": "Ein grauer Schatten, der wächst, wenn die Kinder hetzen und einander nicht zuhören. Er liebt Eile und vergessene Wünsche.",
     "encounter.schatten_der_eile.name": "Der Schatten der Eile",
     "encounter.schatten_der_eile.victory": "Du stehst ruhig und fest. Der Schatten der Eile verliert seine Kraft und zerfließt wie Nebel im Morgensonnenschein.",
-    "encounter.schatten_der_eile.defeat": "Der Schatten wird größer und flüstert: Noch ist nicht alles verloren. Vielleicht beim nächsten Mal …"
+    "encounter.schatten_der_eile.defeat": "Der Schatten wird größer und flüstert: Noch ist nicht alles verloren. Vielleicht beim nächsten Mal …",
+    "story.continue": "Weiter",
+    "story.conversation_hint": "Wähle eine Antwort, um fortzufahren."
   }
 }

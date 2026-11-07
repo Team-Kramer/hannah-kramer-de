@@ -39,6 +39,7 @@ var _infinity_count: int = -1
 @onready var body_margin_container: MarginContainer = %BodyMarginContainer
 @onready var cat_sprite_2d: Sprite2D = %CatSprite2D
 @onready var world_screen: WorldScreen = %WorldScreen
+@onready var story_surface: Node = $CanvasLayer/StorySurface
 @onready var soul_sprite: SoulSprite = %SoulSprite
 @onready var developer_console: DeveloperConsole = %DeveloperConsole
 
@@ -126,6 +127,7 @@ func _ready() -> void:
 
 	_connect_signals()
 	_initialize()
+	story_surface.setup($Controllers/RuleBridge)
 
 	if Game.PARAMS["debug_logs"]:
 		print("_READY: " + self.get_name())
@@ -317,4 +319,4 @@ func _on_enter_soul_simple_tween_end() -> void:
 
 
 func _on_mission_01_button_pressed() -> void:
-	Scene.change_scene("mission_scene")
+	story_surface.open_story("story_mission_spielplatz")
