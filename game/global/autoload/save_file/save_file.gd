@@ -44,6 +44,11 @@ var effect_settings: Dictionary = {
 }
 var npc_events: Dictionary = {}
 var enemy: Dictionary = {"level": "rabbit", "rabbit": {"damage": 0}}
+## The rule-engine story state (resources, relationships, flags, story runtime,
+## unlocks, processed events). null when no story run is active. Owned by the
+## RuleBridge, which exports/imports it for save/resume (PG-07).
+## Typed Variant because null is a meaningful state, not just "unset".
+var story_state: Variant = null
 var metadata: Dictionary = {}
 var locale: String = "en"
 var _last_locale: String = "en"
@@ -379,6 +384,7 @@ func prestige(infinity_count: int) -> void:
 	tab_levels = {"world": 0}
 	npc_events = {}
 	enemy = {"level": "rabbit", "rabbit": {"damage": 0}}
+	story_state = null
 
 	# write save file data
 	var file_name: String = active_file_name
@@ -503,6 +509,7 @@ func _autosave(force: bool = false, silent: bool = false) -> void:
 	if not silent:
 		SignalBus.autosave.emit(seconds_delta, AUTOSAVE_SECONDS)
 
+	SignalBus.save_requested.emit()
 	var file_name: String = active_file_name
 	_update_metadata()
 	var save_data: Dictionary = _export_save_data()
@@ -512,6 +519,7 @@ func _autosave(force: bool = false, silent: bool = false) -> void:
 func save_now() -> void:
 	if not Game.PARAMS["save_system_enabled"]:
 		return
+	SignalBus.save_requested.emit()
 	_update_metadata()
 	var save_data: Dictionary = _export_save_data()
 	_write(active_file_name, save_data)
@@ -567,6 +575,7 @@ func _export_save_data() -> Dictionary:
 	save_data["effect_settings"] = effect_settings
 	save_data["npc_events"] = npc_events
 	save_data["enemy"] = enemy
+	save_data["story_state"] = story_state
 	save_data["metadata"] = metadata
 	save_data["LOCALE"] = locale
 	save_data["content_version"] = _active_content_version
@@ -589,6 +598,7 @@ func _import_save_data(save_data: Dictionary) -> void:
 	effect_settings = _get_effect_settings(save_data)
 	npc_events = _get_npc_events(save_data)
 	enemy = _get_enemy(save_data)
+	story_state = _get_story_state(save_data)
 	metadata = _get_metadata(save_data)
 	locale = _get_locale(save_data)
 
@@ -686,6 +696,10 @@ func _get_enemy(save_data: Dictionary) -> Dictionary:
 	return save_data.get("enemy", enemy)
 
 
+func _get_story_state(save_data: Dictionary) -> Variant:
+	return save_data.get("story_state", story_state)
+
+
 func _get_metadata(save_data: Dictionary) -> Dictionary:
 	return save_data.get("metadata", metadata)
 
@@ -772,7 +786,7 @@ func _reset_content_state(save_data: Dictionary) -> void:
 		"resources", "mission_state", "workers", "substances",
 		"events", "event_log", "resource_generator_unlocks",
 		"worker_role_unlocks", "tab_unlocks", "tab_levels",
-		"npc_events", "enemy",
+		"npc_events", "enemy", "story_state",
 	]:
 		save_data[key] = fresh[key]
 	save_data["content_version"] = _active_content_version

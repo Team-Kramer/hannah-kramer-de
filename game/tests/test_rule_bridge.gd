@@ -74,6 +74,7 @@ func _run_tests() -> void:
 	_test_guards()
 	_test_main_loop_reconcile()
 	_test_story()
+	_test_save_resume()
 
 	_finish()
 
@@ -257,6 +258,59 @@ func _test_story() -> void:
 	_check(str(outcome.get("status", "")) == "complete", "terminal outcome reports complete")
 	_check(int(state["resources"]["stein"]) == 7, "complete does not change resources")
 	_check(int(save_file.resources["stein"]) == 7, "complete does not change SaveFile resources")
+
+
+## PG-07: the engine state must survive a save/load round trip. The bridge
+## exports its state on save_requested; the save file stores it as JSON (all
+## numbers become floats); a fresh bridge restores it from SaveFile.story_state
+## and normalizes the numbers back. The resumed run must be at the same node,
+## with the same resources/relationships/flags, and replayed choice eventIds
+## must still be idempotent (the processedChoiceInputs ledger survived).
+func _test_save_resume() -> void:
+	# Export path: the save_requested signal (emitted by SaveFile before every
+	# file write) must push the current engine state into SaveFile.story_state.
+	save_file.set("story_state", null)
+	signal_bus.emit_signal("save_requested")
+	var exported: Variant = save_file.get("story_state")
+	_check(exported is Dictionary, "save_requested exports the engine state into SaveFile.story_state")
+	if not exported is Dictionary:
+		return
+	var exported_runtime: Dictionary = (exported as Dictionary).get("story", {}).get("runtime", {})
+	_check(str(exported_runtime.get("currentNodeId", "")) == "outcome_reward", "exported state is at the terminal outcome node")
+
+	# Simulate the save file's JSON round trip: everything numeric becomes a
+	# float, exactly like _write/_import_save_data would do.
+	var json_text: String = JSON.stringify(exported)
+	var restored: Variant = JSON.parse_string(json_text)
+	_check(restored is Dictionary, "story state survives the JSON round trip")
+	if not restored is Dictionary:
+		return
+	var restored_resources: Dictionary = (restored as Dictionary).get("resources", {})
+	_check(typeof(restored_resources.get("stein")) == TYPE_FLOAT, "JSON round trip turns stein into a float")
+	save_file.set("story_state", restored)
+
+	# A fresh bridge (new main.tscn) must restore the state in load_package.
+	var fresh: Node = bridge.get_script().new()
+	root.add_child(fresh)
+	fresh.load_package(FIXTURE_DIR)
+	var fresh_state: Dictionary = fresh.get("_state")
+	var fresh_runtime: Dictionary = fresh_state.get("story", {}).get("runtime", {})
+	_check(str(fresh_runtime.get("currentNodeId", "")) == "outcome_reward", "restored run resumes at outcome_reward")
+	_check(str(fresh_runtime.get("pendingInput", {}).get("kind", "")) == "complete", "restored run keeps the complete pending input")
+	_check(typeof(fresh_state["resources"]["stein"]) == TYPE_INT, "restored stein is normalized back to an int")
+	_check(int(fresh_state["resources"]["stein"]) == 7, "restored stein total is intact (7)")
+	_check(int(fresh_state["relationships"]["mira"]) == int(bridge.get("_state")["relationships"]["mira"]), "restored mira relationship is intact")
+	_check(fresh_state["flags"]["test_spent_stone"] == true, "restored flags keep test_spent_stone")
+	_check(fresh_state["flags"]["lumberjack"] == true, "restored flags keep lumberjack")
+
+	# Idempotency across the save boundary: the processedChoiceInputs ledger
+	# must survive, so replaying the original choice eventId is a no-op.
+	var replay: Dictionary = fresh.story_select_choice("story_test", "choice_gate", "spend_stone", "story_test_choice_gate_spend_stone")
+	_check(replay.get("ok", false) == true, "replayed choice after resume returns ok")
+	_check(replay.get("duplicate", false) == true, "replayed choice after resume is flagged duplicate")
+	_check(int(fresh.get("_state")["resources"]["stein"]) == 7, "replayed choice after resume did not change resources")
+	_check(int(save_file.resources["stein"]) == 7, "replayed choice after resume did not change SaveFile resources")
+	root.remove_child(fresh)
 
 
 func _on_progress_button_unlock(_resource_generator: Resource) -> void:

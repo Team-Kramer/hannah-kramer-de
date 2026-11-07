@@ -75,6 +75,9 @@ signal toggle_darkness_mode(mode: int)
 signal deaths_door_decided(enemy_data: EnemyData, option: int)
 signal save_entered(seconds_delta: int, seconds_delta_expected: int)
 signal autosave(seconds_delta: int, seconds_delta_expected: int)
+## Emitted just before any save file write (autosave or manual save_now) so
+## subsystems like the RuleBridge can export their state into SaveFile first.
+signal save_requested()
 signal offline_progress_processed(
 	seconds_delta: int, worker_progress: Dictionary, enemy_progress: Dictionary, factor: float
 )

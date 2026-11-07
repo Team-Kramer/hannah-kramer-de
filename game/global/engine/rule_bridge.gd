@@ -36,6 +36,7 @@ var _rules: Array = []
 func _ready() -> void:
 	SignalBus.resource_updated.connect(_on_resource_updated)
 	SignalBus.npc_event_interacted.connect(_on_npc_event_interacted)
+	SignalBus.save_requested.connect(_on_save_requested)
 	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(package_dir)):
 		load_package(package_dir)
 
@@ -51,6 +52,7 @@ func load_package(dir: String) -> void:
 	_state = EventEngine.initial_state(_pkg)
 	_loaded = true
 	_register_package_resources(_pkg)
+	_restore_story_state()
 	print("RuleBridge: loaded package '%s' (%d rules)" % [str(_pkg.get("manifest", {}).get("packId", "")), _rules.size()])
 
 
@@ -224,6 +226,54 @@ func _reconcile_engine_resources() -> void:
 	for resource_id in engine_resources.keys():
 		if SaveFile.resources.has(resource_id):
 			engine_resources[resource_id] = int(SaveFile.resources[resource_id])
+
+# ---------------------------------------------------------------------------
+# Save / resume (PG-07)
+#
+# The engine state is the single source of truth for story progress, rule
+# effects, and idempotency ledgers. It is persisted into SaveFile.story_state
+# on every autosave and restored when a save is loaded, so a resumed game
+# continues the story at the exact node it left off and replayed choice
+# eventIds stay no-ops across the save boundary.
+# ---------------------------------------------------------------------------
+
+## Pushes the current engine state into SaveFile.story_state (or null when no
+## story run is active). Connected to save_requested, which SaveFile emits
+## just before every file write (autosave and manual save_now).
+func _on_save_requested() -> void:
+	export_story_state()
+
+
+## Exports the engine state for persistence. Returns the exported dict (null
+## when no story run is active) so tests can inspect it directly.
+func export_story_state() -> Variant:
+	if not _loaded:
+		return null
+	var runtime: Dictionary = _state.get("story", {}).get("runtime", {})
+	if runtime.get("currentNodeId", null) == null:
+		SaveFile.story_state = null
+		return null
+	SaveFile.story_state = _state.duplicate(true)
+	return SaveFile.story_state
+
+
+## Restores SaveFile.story_state into the engine state after a save has been
+## loaded (called from load_package, which runs when main.tscn instantiates
+## the bridge after SaveFile.initialize). JSON round-trips turn ints into
+## floats, so the restored state is normalized first.
+func restore_story_state() -> bool:
+	if not _loaded:
+		return false
+	var stored: Variant = SaveFile.story_state
+	if not stored is Dictionary or (stored as Dictionary).is_empty():
+		return false
+	_state = StoryRun.normalize_state_numbers(stored.duplicate(true))
+	return true
+
+
+func _restore_story_state() -> void:
+	if restore_story_state():
+		print("RuleBridge: restored story state from save file")
 
 
 ## Begin the given story. Returns the StoryRun result dict
