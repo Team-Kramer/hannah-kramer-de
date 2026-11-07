@@ -72,6 +72,7 @@ func _run_tests() -> void:
 	_test_resource_rule()
 	_test_npc_choice_rule()
 	_test_guards()
+	_test_main_loop_reconcile()
 	_test_story()
 
 	_finish()
@@ -140,6 +141,30 @@ func _test_guards() -> void:
 	# Non-positive amounts are ignored entirely.
 	signal_bus.emit_signal("resource_updated", "stein", 1, -1, "test")
 	_check(progress_button_unlocks == 1, "negative amount is ignored")
+
+
+## PG-06: the engine's resource totals must track the authoritative main-loop
+## totals (SaveFile.resources, maintained by the ResourceManager), not a stale
+## copy left behind by a rule event. Here the engine holds stein 1 (from the
+## r1 resource.totalAtLeast event in _test_resource_rule) while SaveFile still
+## holds 0, because the test emitted the signal directly without the
+## ResourceManager actually generating the resource. A story `when` condition
+## reads the engine state, so a stale total would wrongly gate choices.
+func _test_main_loop_reconcile() -> void:
+	var state: Dictionary = bridge.get("_state")
+	_check(int(state["resources"]["stein"]) == 1, "engine state is stale at stein 1 (from the rule event)")
+	_check(int(save_file.resources["stein"]) == 0, "SaveFile is the authoritative main-loop total (0)")
+
+	# Simulate the player gathering 5 stein in the main loop: the ResourceManager
+	# writes SaveFile, and the engine state is NOT touched directly.
+	save_file.resources["stein"] = 5
+	_check(int(bridge.get_state()["resources"]["stein"]) == 5, "get_state reconciles the engine total to the main-loop total (5)")
+
+	# And the reverse: consuming in the main loop pulls the engine total down.
+	save_file.resources["stein"] = 0
+	_check(int(bridge.get_state()["resources"]["stein"]) == 0, "get_state reconciles the engine total back down after consumption (0)")
+	# Leave the engine state at the authoritative 0 so _test_story's gated
+	# conversation-choice assertions (unavailable at stein 0) hold.
 
 
 ## Drives the fixture story through the bridge facade: begin, advance into a

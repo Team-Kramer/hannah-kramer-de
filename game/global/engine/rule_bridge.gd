@@ -171,6 +171,10 @@ func _trigger_unique_event_if(event_id: String) -> void:
 # ---------------------------------------------------------------------------
 
 func get_state() -> Dictionary:
+	# Keep the engine's resource totals in step with the main loop so the
+	# surface's live availability display (and any condition evaluation) sees
+	# the player's actual totals, not a stale copy.
+	_reconcile_engine_resources()
 	return _state
 
 
@@ -211,12 +215,24 @@ func get_npcs() -> Array:
 	return npcs
 
 
+## Pulls the authoritative resource totals from SaveFile (maintained by the
+## main loop's ResourceManager) into the engine state before a story action,
+## so `when` conditions and spend effects evaluate against the player's real
+## totals — including resources gathered or consumed outside the story.
+func _reconcile_engine_resources() -> void:
+	var engine_resources: Dictionary = _state.get("resources", {})
+	for resource_id in engine_resources.keys():
+		if SaveFile.resources.has(resource_id):
+			engine_resources[resource_id] = int(SaveFile.resources[resource_id])
+
+
 ## Begin the given story. Returns the StoryRun result dict
 ## ({ok, ...} or {ok: false, error}).
 func story_begin(story_id: String) -> Dictionary:
 	var story: Dictionary = get_story(story_id)
 	if story.is_empty():
 		return { "ok": false, "error": "story not found: %s" % story_id }
+	_reconcile_engine_resources()
 	var before: Dictionary = _state.get("resources", {}).duplicate(true)
 	var result: Dictionary = StoryRun.begin_story(story, _state, get_conversations(), _catalog, _pkg)
 	if result.get("ok", false):
@@ -229,6 +245,7 @@ func story_advance(story_id: String) -> Dictionary:
 	var story: Dictionary = get_story(story_id)
 	if story.is_empty():
 		return { "ok": false, "error": "story not found: %s" % story_id }
+	_reconcile_engine_resources()
 	var before: Dictionary = _state.get("resources", {}).duplicate(true)
 	var result: Dictionary = StoryRun.advance_story(story, _state, get_conversations(), _catalog, _pkg)
 	if result.get("ok", false):
@@ -242,6 +259,7 @@ func story_select_choice(story_id: String, node_id: String, choice_id: String, e
 	var story: Dictionary = get_story(story_id)
 	if story.is_empty():
 		return { "ok": false, "error": "story not found: %s" % story_id }
+	_reconcile_engine_resources()
 	var before: Dictionary = _state.get("resources", {}).duplicate(true)
 	var result: Dictionary = StoryRun.select_story_choice(story, node_id, choice_id, event_id, _state, get_conversations(), _catalog, _pkg)
 	if result.get("ok", false):
@@ -259,6 +277,7 @@ func story_select_conversation_choice(conversation_id: String, choice_id: String
 			break
 	if conversation.is_empty():
 		return { "ok": false, "error": "conversation not found: %s" % conversation_id }
+	_reconcile_engine_resources()
 	var before: Dictionary = _state.get("resources", {}).duplicate(true)
 	var result: Dictionary = StoryRun.select_conversation_choice(conversation, choice_id, event_id, _rules, _state, conversations, _catalog, _pkg)
 	if result.get("ok", false):
