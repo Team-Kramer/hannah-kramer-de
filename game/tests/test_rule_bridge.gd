@@ -75,6 +75,7 @@ func _run_tests() -> void:
 	_test_main_loop_reconcile()
 	_test_story()
 	_test_save_resume()
+	_test_relationships()
 
 	_finish()
 
@@ -310,6 +311,108 @@ func _test_save_resume() -> void:
 	_check(replay.get("duplicate", false) == true, "replayed choice after resume is flagged duplicate")
 	_check(int(fresh.get("_state")["resources"]["stein"]) == 7, "replayed choice after resume did not change resources")
 	_check(int(save_file.resources["stein"]) == 7, "replayed choice after resume did not change SaveFile resources")
+	root.remove_child(fresh)
+
+
+## PG-09: relationships persist independently per character. Adjusting one
+## character's relationship must never change another's, and a choice gated
+## on a character's relationship must change the later outcome for that same
+## character (here: mira >= 2 unlocks the warm outcome, which itself bumps
+## mira again) while leaving bruno untouched. The per-character values must
+## also survive a save/restore round trip.
+func _test_relationships() -> void:
+	# Fresh bridge with no saved run: load_package restores SaveFile.story_state
+	# if present, so clear the completed story_test run first.
+	save_file.set("story_state", null)
+	var fresh: Node = bridge.get_script().new()
+	root.add_child(fresh)
+	fresh.load_package(FIXTURE_DIR)
+	var state: Dictionary = fresh.get("_state")
+	_check(state["relationships"].has("mira"), "mira relationship is seeded from the package NPC")
+	_check(state["relationships"].has("bruno"), "bruno relationship is seeded from the package NPC")
+	_check(int(state["relationships"]["mira"]) == 0, "mira starts at relationship 0")
+	_check(int(state["relationships"]["bruno"]) == 0, "bruno starts at relationship 0")
+
+	# Independence, direction 1: the r2 rule bump for mira must not touch bruno.
+	signal_bus.emit_signal("npc_event_interacted", "mira", "mira_talk", 0)
+	state = fresh.get("_state")
+	_check(int(state["relationships"]["mira"]) == 1, "r2 bumps mira to 1 on the fresh bridge")
+	_check(int(state["relationships"]["bruno"]) == 0, "mira bump does not change bruno")
+
+	# Begin the relationship story: beat -> bruno conversation -> decision.
+	var begin: Dictionary = fresh.story_begin("story_relationships")
+	_check(begin.get("ok", false) == true, "story_relationships begins on the fresh bridge")
+	var advance: Dictionary = fresh.story_advance("story_relationships")
+	state = fresh.get("_state")
+	_check(str(advance.get("status", "")) == "advanced", "advance into the bruno conversation")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "bruno_talk", "story moved to the bruno conversation")
+	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "conversationChoice", "conversation waits for a choice")
+
+	# Independence, direction 2: bruno's conversation choice carries a
+	# relationship.adjust for bruno and must not touch mira.
+	var bruno_choice: Dictionary = fresh.story_select_conversation_choice("bruno_talk", "1", "story_relationships_conv_bruno_talk_1")
+	state = fresh.get("_state")
+	_check(bruno_choice.get("ok", false) == true, "bruno conversation choice is accepted")
+	_check(bruno_choice.get("available", false) == true, "bruno conversation choice is available")
+	_check(int(state["relationships"]["bruno"]) == 1, "bruno choice applies the bruno relationship +1")
+	_check(int(state["relationships"]["mira"]) == 1, "bruno choice does not change mira")
+
+	# Continue back into the story graph at the decision node.
+	var to_decision: Dictionary = fresh.story_advance("story_relationships")
+	state = fresh.get("_state")
+	_check(str(to_decision.get("status", "")) == "advanced", "continue conversation back into the story")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "rel_choice", "story moved to the relationship decision")
+	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "storyChoice", "decision waits for a choice")
+
+	# Gated choice: trust_mira requires relationships.mira >= 2. At mira 1 the
+	# choice must be refused without moving the run.
+	var blocked: Dictionary = fresh.story_select_choice("story_relationships", "rel_choice", "trust_mira", "story_relationships_rel_choice_trust_mira")
+	state = fresh.get("_state")
+	_check(blocked.get("ok", false) == true, "gated relationship choice returns ok")
+	_check(blocked.get("available", false) == false, "gated relationship choice unavailable at mira 1")
+	_check(str(blocked.get("reason", "")) == "condition_not_met", "gated relationship choice reports condition_not_met")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "rel_choice", "blocked choice does not move the run")
+
+	# Bring mira to the threshold (whitebox, same pattern as the stein seeding
+	# in _test_story) and re-select: the same choice now unlocks a different
+	# outcome for that same character.
+	state["relationships"]["mira"] = 2
+	var trust: Dictionary = fresh.story_select_choice("story_relationships", "rel_choice", "trust_mira", "story_relationships_rel_choice_trust_mira")
+	state = fresh.get("_state")
+	_check(trust.get("ok", false) == true, "relationship choice is accepted at the threshold")
+	_check(trust.get("available", false) == true, "gated relationship choice available at mira 2")
+	_check(trust.get("duplicate", false) == false, "first trust_mira selection is not a duplicate")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "outcome_warm", "relationship-gated choice reaches the warm outcome")
+
+	# The warm outcome's effect persists on mira; bruno stays untouched.
+	_check(int(state["relationships"]["mira"]) == 3, "outcome_warm applies the mira relationship effect (2+1)")
+	_check(int(state["relationships"]["bruno"]) == 1, "warm outcome does not change bruno")
+
+	var done: Dictionary = fresh.story_advance("story_relationships")
+	_check(str(done.get("status", "")) == "complete", "warm outcome is terminal")
+
+	# Persistence: the per-character relationships must survive the save
+	# boundary (JSON round trip) and restore into a fresh bridge intact.
+	var exported: Variant = fresh.export_story_state()
+	_check(exported is Dictionary, "completed relationship run exports its state")
+	if not exported is Dictionary:
+		root.remove_child(fresh)
+		return
+	var json_text: String = JSON.stringify(exported)
+	var restored: Variant = JSON.parse_string(json_text)
+	_check(restored is Dictionary, "relationship state survives the JSON round trip")
+	if not restored is Dictionary:
+		root.remove_child(fresh)
+		return
+	save_file.set("story_state", restored)
+	var resumed: Node = bridge.get_script().new()
+	root.add_child(resumed)
+	resumed.load_package(FIXTURE_DIR)
+	var resumed_state: Dictionary = resumed.get("_state")
+	_check(typeof(resumed_state["relationships"]["mira"]) == TYPE_INT, "restored mira relationship is normalized back to an int")
+	_check(int(resumed_state["relationships"]["mira"]) == 3, "restored mira relationship is intact (3)")
+	_check(int(resumed_state["relationships"]["bruno"]) == 1, "restored bruno relationship is intact (1)")
+	root.remove_child(resumed)
 	root.remove_child(fresh)
 
 

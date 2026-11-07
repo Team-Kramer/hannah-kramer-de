@@ -8,7 +8,9 @@
     "resources.json",
     "rules.json",
     "stories/story_test.json",
+    "stories/story_relationships.json",
     "npcs/mira.json",
+    "npcs/bruno.json",
     "locales/de.json",
     "locales/en.json"
   ]
