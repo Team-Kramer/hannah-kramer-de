@@ -18,6 +18,8 @@ const EventEngine := preload("res://global/engine/event_engine.gd")
 @onready var placeholder_label: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/Illustration/PlaceholderLabel
 @onready var brief_label: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/Illustration/BriefLabel
 @onready var caption_label: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/TextVBoxContainer/CaptionLabel
+@onready var speaker_label: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/TextVBoxContainer/SpeakerLabel
+@onready var dialogue_label: Label = $Panel/MarginContainer/VBoxContainer/HBoxContainer/TextVBoxContainer/DialogueLabel
 @onready var buttons: VBoxContainer = $Panel/MarginContainer/VBoxContainer/HBoxContainer/TextVBoxContainer/Buttons
 
 var _bridge: Node = null
@@ -69,6 +71,9 @@ func _render() -> void:
 	# Caption / prompt.
 	var text_key: String = str(node.get("captionKey", node.get("promptKey", "")))
 	caption_label.text = _t(text_key)
+	# Dialogue line for conversation nodes (speaker + text of the current
+	# dialogue node); hidden for all other node types.
+	_render_dialogue(node, runtime)
 	# Illustration.
 	_render_illustration(node)
 	# Buttons per pending input kind.
@@ -91,6 +96,23 @@ func _render_illustration(node: Dictionary) -> void:
 		var asset_id: String = str(node.get("illustration", {}).get("assetId", ""))
 		placeholder_label.text = "[illustration: %s]" % asset_id
 		brief_label.text = str(asset.get("artBrief", ""))
+
+func _render_dialogue(node: Dictionary, runtime: Dictionary) -> void:
+	if str(node.get("type")) != "conversation":
+		speaker_label.visible = false
+		dialogue_label.visible = false
+		return
+	var conversation: Dictionary = _conversation(str(node.get("conversationId", "")))
+	var dialogue_node: Dictionary = _dialogue_node(conversation, str(runtime.get("currentDialogueNodeId", "")))
+	if dialogue_node.is_empty():
+		speaker_label.visible = false
+		dialogue_label.visible = false
+		return
+	var speaker: Dictionary = _npc_record(str(dialogue_node.get("speakerId", "")))
+	speaker_label.text = _t(str(speaker.get("displayNameKey", "")))
+	dialogue_label.text = _t(str(dialogue_node.get("textKey", "")))
+	speaker_label.visible = speaker_label.text != ""
+	dialogue_label.visible = dialogue_label.text != ""
 
 func _build_buttons(node: Dictionary, kind: String, pending: Dictionary) -> void:
 	for child in buttons.get_children():
@@ -176,6 +198,14 @@ func _dialogue_node(conversation: Dictionary, node_id: String) -> Dictionary:
 	for node in _as_array(conversation.get("nodes")):
 		if node is Dictionary and str(node.get("id")) == node_id:
 			return node
+	return {}
+
+func _npc_record(npc_id: String) -> Dictionary:
+	if npc_id == "":
+		return {}
+	for npc in _bridge.get_npcs():
+		if npc is Dictionary and str(npc.get("id")) == npc_id:
+			return npc
 	return {}
 
 ## The catalog is an id set, so asset records are read from the package's
