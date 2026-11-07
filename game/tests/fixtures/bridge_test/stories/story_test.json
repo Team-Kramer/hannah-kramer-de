@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "story": {
+    "id": "story_test",
+    "titleKey": "story_test.title",
+    "startNodeId": "beat_start",
+    "nodes": [
+      {
+        "id": "beat_start",
+        "type": "storyBeat",
+        "locationId": "test_clearing",
+        "captionKey": "story_test.beat_start.caption",
+        "transitions": [ { "id": "to_choice", "to": "choice_gate" } ]
+      },
+      {
+        "id": "choice_gate",
+        "type": "decision",
+        "locationId": "test_clearing",
+        "promptKey": "story_test.choice_gate.prompt",
+        "choices": [
+          {
+            "id": "spend_stone",
+            "labelKey": "story_test.choice_gate.spend_stone.label",
+            "when": { "all": [ { "path": "resources.stein", "op": "gte", "value": 3 } ] },
+            "effects": [
+              { "op": "resource.spend", "resourceId": "stein", "amount": 3 },
+              { "op": "flag.set", "flagId": "test_spent_stone", "value": true }
+            ],
+            "to": "outcome_reward"
+          },
+          {
+            "id": "skip",
+            "labelKey": "story_test.choice_gate.skip.label",
+            "when": { "all": [] },
+            "effects": [],
+            "to": "outcome_skip"
+          }
+        ]
+      },
+      {
+        "id": "outcome_reward",
+        "type": "outcome",
+        "locationId": "test_clearing",
+        "captionKey": "story_test.outcome_reward.caption",
+        "effects": [
+          { "op": "resource.add", "resourceId": "stein", "amount": 5 }
+        ]
+      },
+      {
+        "id": "outcome_skip",
+        "type": "outcome",
+        "locationId": "test_clearing",
+        "captionKey": "story_test.outcome_skip.caption"
+      }
+    ]
+  }
+}

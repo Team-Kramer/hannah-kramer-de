@@ -13,11 +13,15 @@ extends Node
 ##   - event.record            -> event_triggered
 ##   - resource.add            -> resource_generated (goes through ResourceManager)
 ##
+## Story facade (PG-04): drives the StoryRun state machine against the shared
+## engine state and keeps SaveFile.resources in sync after each action.
+##
 ## The bridge contains no content-specific logic; all lookups are generic
 ## catalog lookups by string ID.
 
 const PackageLoader := preload("res://global/engine/package_loader.gd")
 const EventEngine := preload("res://global/engine/event_engine.gd")
+const StoryRun := preload("res://global/engine/story_run.gd")
 
 ## Directory of the active JSON content package (loaded in _ready if present).
 var package_dir: String = "res://content/active"
@@ -131,6 +135,11 @@ func _apply_effect(entry: Dictionary) -> void:
 			var amount: int = int(effect.get("amount", 0))
 			if amount != 0:
 				SignalBus.resource_generated.emit(resource_id, amount, "rule_bridge")
+		"resource.spend":
+			var spend_id: String = str(effect.get("resourceId"))
+			var spend_amount: int = int(effect.get("amount", 0))
+			if spend_amount != 0:
+				SignalBus.resource_generated.emit(spend_id, -spend_amount, "rule_bridge")
 
 
 func _unlock_resource_generator_if(id: String) -> void:
@@ -149,3 +158,112 @@ func _unlock_flag_if(flag_id: String) -> void:
 func _trigger_unique_event_if(event_id: String) -> void:
 	if SaveFile.events.get(event_id, 0) == 0 and Resources.event_datas.has(event_id):
 		SignalBus.event_triggered.emit(Resources.event_datas[event_id], [])
+
+
+# ---------------------------------------------------------------------------
+# Story facade (PG-04)
+#
+# The story UI (story_surface) drives the StoryRun state machine through these
+# methods. StoryRun mutates the shared engine state in place; after each
+# successful action the bridge syncs the resource deltas into SaveFile so the
+# production ResourceManager (and everything listening to resource signals)
+# sees story-originated gains and spends.
+# ---------------------------------------------------------------------------
+
+func get_state() -> Dictionary:
+	return _state
+
+
+func get_pkg() -> Dictionary:
+	return _pkg
+
+
+func get_catalog() -> Dictionary:
+	return _catalog
+
+
+func get_rules() -> Array:
+	return _rules
+
+
+func get_story(story_id: String) -> Dictionary:
+	var doc: Variant = _pkg.get("stories", {}).get(story_id)
+	if doc is Dictionary:
+		return doc.get("story", {})
+	return {}
+
+
+## All conversation docs in the package (flattened for StoryRun).
+func get_conversations() -> Array:
+	return StoryRun.flatten_conversations(_pkg)
+
+
+## Begin the given story. Returns the StoryRun result dict
+## ({ok, ...} or {ok: false, error}).
+func story_begin(story_id: String) -> Dictionary:
+	var story: Dictionary = get_story(story_id)
+	if story.is_empty():
+		return { "ok": false, "error": "story not found: %s" % story_id }
+	var before: Dictionary = _state.get("resources", {}).duplicate(true)
+	var result: Dictionary = StoryRun.begin_story(story, _state, get_conversations(), _catalog, _pkg)
+	if result.get("ok", false):
+		_sync_story_resources(before)
+	return result
+
+
+## Advance the story (continue / continueConversation / branch / complete).
+func story_advance(story_id: String) -> Dictionary:
+	var story: Dictionary = get_story(story_id)
+	if story.is_empty():
+		return { "ok": false, "error": "story not found: %s" % story_id }
+	var before: Dictionary = _state.get("resources", {}).duplicate(true)
+	var result: Dictionary = StoryRun.advance_story(story, _state, get_conversations(), _catalog, _pkg)
+	if result.get("ok", false):
+		_sync_story_resources(before)
+	return result
+
+
+## Select a decision-node choice. `event_id` dedupes the input (use a stable
+## id like "story_<storyId>_<nodeId>_<choiceId>").
+func story_select_choice(story_id: String, node_id: String, choice_id: String, event_id: String) -> Dictionary:
+	var story: Dictionary = get_story(story_id)
+	if story.is_empty():
+		return { "ok": false, "error": "story not found: %s" % story_id }
+	var before: Dictionary = _state.get("resources", {}).duplicate(true)
+	var result: Dictionary = StoryRun.select_story_choice(story, node_id, choice_id, event_id, _state, get_conversations(), _catalog, _pkg)
+	if result.get("ok", false):
+		_sync_story_resources(before)
+	return result
+
+
+## Select a dialogue-node choice in the active conversation.
+func story_select_conversation_choice(conversation_id: String, choice_id: String, event_id: String) -> Dictionary:
+	var conversations: Array = get_conversations()
+	var conversation: Dictionary = {}
+	for candidate in conversations:
+		if str(candidate.get("id")) == conversation_id:
+			conversation = candidate
+			break
+	if conversation.is_empty():
+		return { "ok": false, "error": "conversation not found: %s" % conversation_id }
+	var before: Dictionary = _state.get("resources", {}).duplicate(true)
+	var result: Dictionary = StoryRun.select_conversation_choice(conversation, choice_id, event_id, _rules, _state, conversations, _catalog, _pkg)
+	if result.get("ok", false):
+		_sync_story_resources(before)
+	return result
+
+
+## Emits signed resource deltas produced by the last story action and
+## reconciles the engine state with SaveFile.resources (which may have been
+## shadow-scaled or clamped by the ResourceManager).
+func _sync_story_resources(before: Dictionary) -> void:
+	var after: Dictionary = _state.get("resources", {})
+	for resource_id in after.keys():
+		var delta: int = int(after.get(resource_id, 0)) - int(before.get(resource_id, 0))
+		if delta != 0:
+			SignalBus.resource_generated.emit(resource_id, delta, "rule_bridge")
+	# Reconcile: the ResourceManager may have scaled/clamped the amounts,
+	# so read the authoritative totals back into the engine state.
+	for resource_id in after.keys():
+		if SaveFile.resources.has(resource_id):
+			_state["resources"][resource_id] = int(SaveFile.resources[resource_id])

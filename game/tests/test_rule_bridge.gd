@@ -24,7 +24,9 @@ var progress_button_unlocks: int = 0
 var manager_button_unlocks: int = 0
 var tab_unlocks: int = 0
 var event_triggers: int = 0
+var resource_generated_count: int = 0
 var last_event_data: Resource = null
+var resource_manager: Node = null
 
 
 func _initialize() -> void:
@@ -58,11 +60,19 @@ func _run_tests() -> void:
 	signal_bus.connect("manager_button_unlock", _on_manager_button_unlock)
 	signal_bus.connect("tab_unlock", _on_tab_unlock)
 	signal_bus.connect("event_triggered", _on_event_triggered)
+	signal_bus.connect("resource_generated", _on_resource_generated)
+
+	# A real ResourceManager in the tree so story resource deltas flow through
+	# the production handler (shadow scaling, clamping, spent_ counters).
+	var rm_script: GDScript = load("res://scenes/manager/resource_manager/resource_manager.gd")
+	resource_manager = rm_script.new()
+	root.add_child(resource_manager)
 
 	_test_resource_registration()
 	_test_resource_rule()
 	_test_npc_choice_rule()
 	_test_guards()
+	_test_story()
 
 	_finish()
 
@@ -132,6 +142,57 @@ func _test_guards() -> void:
 	_check(progress_button_unlocks == 1, "negative amount is ignored")
 
 
+## Drives the fixture story through the bridge facade: begin, advance, gated
+## decision choice (spend + flag + outcome gain), idempotency, and the
+## terminal outcome. Resource deltas flow through the real ResourceManager
+## into SaveFile. Note: outcome effects apply during select_story_choice
+## (via enter_story_node), so the engine nets spend(-3) + gain(+5) = +2,
+## and the bridge syncs the net delta to SaveFile.
+func _test_story() -> void:
+	var state: Dictionary = bridge.get("_state")
+
+	# Seed stein so the gated choice (requires stein >= 3) is available.
+	save_file.resources["stein"] = 5
+	state["resources"]["stein"] = 5
+
+	var begin: Dictionary = bridge.story_begin("story_test")
+	_check(begin.get("ok", false) == true, "story_begin succeeds")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "beat_start", "story starts at beat_start")
+	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "continue", "storyBeat waits for continue")
+
+	var advance: Dictionary = bridge.story_advance("story_test")
+	_check(advance.get("ok", false) == true, "story_advance succeeds")
+	_check(str(advance.get("status", "")) == "advanced", "advance reports advanced")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "choice_gate", "story moved to choice_gate")
+	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "storyChoice", "decision waits for a choice")
+
+	# Gated choice: with stein 5 the condition (stein >= 3) is met.
+	# Effects: spend 3 stein + set flag, then outcome_reward adds 5 stein.
+	# Net engine delta: -3 + 5 = +2.
+	var spend: Dictionary = bridge.story_select_choice("story_test", "choice_gate", "spend_stone", "story_test_choice_gate_spend_stone")
+	_check(spend.get("ok", false) == true, "gated choice is accepted")
+	_check(spend.get("available", false) == true, "gated choice is available at stein 5")
+	_check(spend.get("duplicate", false) == false, "first choice is not a duplicate")
+	_check(int(state["resources"]["stein"]) == 7, "engine state nets -3 spend + 5 outcome = 7")
+	_check(state["flags"]["test_spent_stone"] == true, "choice set the test_spent_stone flag")
+	_check(str(state["story"]["runtime"]["currentNodeId"]) == "outcome_reward", "choice moved to outcome_reward")
+	_check(int(save_file.resources["stein"]) == 7, "ResourceManager applied the net +2 delta to SaveFile (5+2)")
+	_check(resource_generated_count >= 1, "resource_generated signal fired for the story delta")
+
+	# Idempotency: replaying the same eventId is a no-op.
+	var again: Dictionary = bridge.story_select_choice("story_test", "choice_gate", "spend_stone", "story_test_choice_gate_spend_stone")
+	_check(again.get("ok", false) == true, "replayed choice returns ok")
+	_check(again.get("duplicate", false) == true, "replayed choice is flagged duplicate")
+	_check(int(state["resources"]["stein"]) == 7, "replayed choice did not change resources")
+
+	# Terminal outcome: pendingInput.kind is "complete", advance reports complete.
+	var outcome: Dictionary = bridge.story_advance("story_test")
+	_check(outcome.get("ok", false) == true, "advance into outcome succeeds")
+	_check(str(outcome.get("status", "")) == "complete", "terminal outcome reports complete")
+	_check(int(state["resources"]["stein"]) == 7, "complete does not change resources")
+	_check(int(save_file.resources["stein"]) == 7, "complete does not change SaveFile resources")
+
+
 func _on_progress_button_unlock(_resource_generator: Resource) -> void:
 	progress_button_unlocks += 1
 
@@ -147,6 +208,10 @@ func _on_tab_unlock(_tab_data: Resource) -> void:
 func _on_event_triggered(event_data: Resource, _vals: Array) -> void:
 	event_triggers += 1
 	last_event_data = event_data
+
+
+func _on_resource_generated(_id: String, _amount: int, _source_id: String) -> void:
+	resource_generated_count += 1
 
 
 func _finish() -> void:
