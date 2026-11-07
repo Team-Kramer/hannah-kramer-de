@@ -142,40 +142,81 @@ func _test_guards() -> void:
 	_check(progress_button_unlocks == 1, "negative amount is ignored")
 
 
-## Drives the fixture story through the bridge facade: begin, advance, gated
-## decision choice (spend + flag + outcome gain), idempotency, and the
-## terminal outcome. Resource deltas flow through the real ResourceManager
-## into SaveFile. Note: outcome effects apply during select_story_choice
-## (via enter_story_node), so the engine nets spend(-3) + gain(+5) = +2,
-## and the bridge syncs the net delta to SaveFile.
+## Drives the fixture story through the bridge facade: begin, advance into a
+## conversation node, a gated conversation choice with a shared-contract
+## relationship effect, continue back to the story, a gated decision choice
+## (spend + flag + outcome gain), idempotency, and the terminal outcome.
+## Resource deltas flow through the real ResourceManager into SaveFile.
+## Note: outcome effects apply during select_story_choice (via
+## enter_story_node), so the engine nets spend(-3) + gain(+5) = +2, and the
+## bridge syncs the net delta to SaveFile.
 func _test_story() -> void:
 	var state: Dictionary = bridge.get("_state")
-
-	# Seed stein so the gated choice (requires stein >= 3) is available.
-	save_file.resources["stein"] = 5
-	state["resources"]["stein"] = 5
+	var runtime: Dictionary = state["story"]["runtime"]
 
 	var begin: Dictionary = bridge.story_begin("story_test")
 	_check(begin.get("ok", false) == true, "story_begin succeeds")
-	_check(str(state["story"]["runtime"]["currentNodeId"]) == "beat_start", "story starts at beat_start")
-	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "continue", "storyBeat waits for continue")
+	_check(str(runtime["currentNodeId"]) == "beat_start", "story starts at beat_start")
+	_check(str(runtime["pendingInput"]["kind"]) == "continue", "storyBeat waits for continue")
 
+	# PG-05: advance into the conversation node.
 	var advance: Dictionary = bridge.story_advance("story_test")
 	_check(advance.get("ok", false) == true, "story_advance succeeds")
 	_check(str(advance.get("status", "")) == "advanced", "advance reports advanced")
-	_check(str(state["story"]["runtime"]["currentNodeId"]) == "choice_gate", "story moved to choice_gate")
-	_check(str(state["story"]["runtime"]["pendingInput"]["kind"]) == "storyChoice", "decision waits for a choice")
+	_check(str(runtime["currentNodeId"]) == "mira_talk", "story moved to mira_talk conversation")
+	_check(str(runtime["pendingInput"]["kind"]) == "conversationChoice", "conversation waits for a choice")
+	_check(str(runtime["pendingInput"]["conversationId"]) == "mira_talk", "pending input references the conversation")
+	_check(str(runtime["currentDialogueNodeId"]) == "n1", "dialogue starts at n1")
+
+	# Gated conversation choice "1" (needs stein >= 1) is unavailable at stein 0.
+	var conv_blocked: Dictionary = bridge.story_select_conversation_choice("mira_talk", "1", "story_test_conv_mira_talk_1")
+	_check(conv_blocked.get("ok", false) == true, "gated conversation choice returns ok")
+	_check(conv_blocked.get("available", false) == false, "gated conversation choice unavailable at stein 0")
+	_check(str(conv_blocked.get("reason", "")) == "condition_not_met", "gated conversation choice reports condition_not_met")
+
+	# Seed stein so both the conversation choice (>= 1) and the story choice
+	# (>= 3) become available.
+	save_file.resources["stein"] = 5
+	state["resources"]["stein"] = 5
+
+	var base_mira: int = int(state["relationships"]["mira"])
+	var conv: Dictionary = bridge.story_select_conversation_choice("mira_talk", "1", "story_test_conv_mira_talk_1")
+	# Committing bridge calls replace state["story"] with a fresh dict.
+	runtime = state["story"]["runtime"]
+	_check(conv.get("ok", false) == true, "conversation choice is accepted")
+	_check(conv.get("available", false) == true, "conversation choice is available at stein 5")
+	_check(conv.get("duplicate", false) == false, "first conversation choice is not a duplicate")
+	_check(int(state["relationships"]["mira"]) == base_mira + 1, "conversation choice applied the relationship.adjust effect")
+	_check(str(runtime["currentDialogueNodeId"]) == "n2", "dialogue advanced to n2")
+	_check(str(runtime["pendingInput"]["kind"]) == "continueConversation", "terminal dialogue line waits for continue")
+	_check(int(state["resources"]["stein"]) == 5, "conversation choice did not change resources")
+
+	# Idempotency: replaying the same eventId is a no-op.
+	var conv_again: Dictionary = bridge.story_select_conversation_choice("mira_talk", "1", "story_test_conv_mira_talk_1")
+	runtime = state["story"]["runtime"]
+	_check(conv_again.get("ok", false) == true, "replayed conversation choice returns ok")
+	_check(conv_again.get("duplicate", false) == true, "replayed conversation choice is flagged duplicate")
+	_check(int(state["relationships"]["mira"]) == base_mira + 1, "replayed conversation choice did not change relationships")
+
+	# Continue the conversation back into the story graph.
+	var conv_advance: Dictionary = bridge.story_advance("story_test")
+	runtime = state["story"]["runtime"]
+	_check(conv_advance.get("ok", false) == true, "continue conversation succeeds")
+	_check(str(conv_advance.get("status", "")) == "advanced", "continue conversation reports advanced")
+	_check(str(runtime["currentNodeId"]) == "choice_gate", "story moved to choice_gate after conversation")
+	_check(str(runtime["pendingInput"]["kind"]) == "storyChoice", "decision waits for a choice")
 
 	# Gated choice: with stein 5 the condition (stein >= 3) is met.
 	# Effects: spend 3 stein + set flag, then outcome_reward adds 5 stein.
 	# Net engine delta: -3 + 5 = +2.
 	var spend: Dictionary = bridge.story_select_choice("story_test", "choice_gate", "spend_stone", "story_test_choice_gate_spend_stone")
+	runtime = state["story"]["runtime"]
 	_check(spend.get("ok", false) == true, "gated choice is accepted")
 	_check(spend.get("available", false) == true, "gated choice is available at stein 5")
 	_check(spend.get("duplicate", false) == false, "first choice is not a duplicate")
 	_check(int(state["resources"]["stein"]) == 7, "engine state nets -3 spend + 5 outcome = 7")
 	_check(state["flags"]["test_spent_stone"] == true, "choice set the test_spent_stone flag")
-	_check(str(state["story"]["runtime"]["currentNodeId"]) == "outcome_reward", "choice moved to outcome_reward")
+	_check(str(runtime["currentNodeId"]) == "outcome_reward", "choice moved to outcome_reward")
 	_check(int(save_file.resources["stein"]) == 7, "ResourceManager applied the net +2 delta to SaveFile (5+2)")
 	_check(resource_generated_count >= 1, "resource_generated signal fired for the story delta")
 

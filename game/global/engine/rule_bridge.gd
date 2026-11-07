@@ -198,6 +198,19 @@ func get_conversations() -> Array:
 	return StoryRun.flatten_conversations(_pkg)
 
 
+## All NPC records in the package (flattened from the per-NPC documents).
+func get_npcs() -> Array:
+	var npcs: Array = []
+	for npc_id in _pkg.get("npcs", {}):
+		var document: Dictionary = _pkg["npcs"][npc_id]
+		var list: Variant = document.get("npcs")
+		if list is Array:
+			for npc in list:
+				if npc is Dictionary:
+					npcs.append(npc)
+	return npcs
+
+
 ## Begin the given story. Returns the StoryRun result dict
 ## ({ok, ...} or {ok: false, error}).
 func story_begin(story_id: String) -> Dictionary:

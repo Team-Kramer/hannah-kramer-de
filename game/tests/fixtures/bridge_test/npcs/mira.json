@@ -26,6 +26,15 @@
               "labelKey": "conversation.mira_talk.n1.c1.label",
               "effects": [],
               "to": "n2"
+            },
+            {
+              "id": "1",
+              "labelKey": "conversation.mira_talk.n1.c2.label",
+              "when": { "all": [ { "path": "resources.stein", "op": "gte", "value": 1 } ] },
+              "effects": [
+                { "op": "relationship.adjust", "characterId": "mira", "amount": 1 }
+              ],
+              "to": "n2"
             }
           ]
         },

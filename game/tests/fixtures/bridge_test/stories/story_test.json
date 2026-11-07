@@ -11,6 +11,14 @@
         "type": "storyBeat",
         "locationId": "test_clearing",
         "captionKey": "story_test.beat_start.caption",
+        "transitions": [ { "id": "to_talk", "to": "mira_talk" } ]
+      },
+      {
+        "id": "mira_talk",
+        "type": "conversation",
+        "locationId": "test_clearing",
+        "conversationId": "mira_talk",
+        "captionKey": "story_test.mira_talk.caption",
         "transitions": [ { "id": "to_choice", "to": "choice_gate" } ]
       },
       {
