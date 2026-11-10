@@ -22,6 +22,7 @@ func _run_tests() -> void:
 		_test_outcomes()
 		_test_mission_state_persistence()
 		await _test_mission_screen()
+		await _test_shared_freundschaft()
 		await _test_resume()
 		_test_initialize_import()
 		_test_save_disk_round_trip()
@@ -231,8 +232,7 @@ func _test_mission_state_persistence() -> void:
 		"unlocks": ["licht_rat"],
 		"mut_sterne": 15,
 		"rhythmus": 0,
-		"schatten_der_eile": 1,
-		"character_freundschaft": {"juan": 5}
+		"schatten_der_eile": 1
 	}
 	save_file.set("mission_state", expected_state.duplicate(true))
 	var exported: Dictionary = save_file.call("_export_save_data")
@@ -268,8 +268,7 @@ func _test_resume() -> void:
 		"unlocks": [],
 		"mut_sterne": 0,
 		"rhythmus": 0,
-		"schatten_der_eile": 1,
-		"character_freundschaft": {}
+		"schatten_der_eile": 1
 	})
 
 	var packed_scene: PackedScene = load(MISSION_SCREEN_PATH) as PackedScene
@@ -327,8 +326,7 @@ func _test_initialize_import() -> void:
 		"unlocks": ["licht_rat"],
 		"mut_sterne": 15,
 		"rhythmus": 0,
-		"schatten_der_eile": 0,
-		"character_freundschaft": {}
+		"schatten_der_eile": 0
 	})
 	save_file.call("save_now")
 
@@ -339,8 +337,7 @@ func _test_initialize_import() -> void:
 		"unlocks": [],
 		"mut_sterne": 0,
 		"rhythmus": 0,
-		"schatten_der_eile": 0,
-		"character_freundschaft": {}
+		"schatten_der_eile": 0
 	})
 	save_file.call("initialize", test_file, "")
 	var completed: Dictionary = save_file.get("mission_state").get("completed", {})
@@ -374,8 +371,7 @@ func _test_save_disk_round_trip() -> void:
 		"unlocks": ["licht_rat"],
 		"mut_sterne": 15,
 		"rhythmus": 3,
-		"schatten_der_eile": 2,
-		"character_freundschaft": {"juan": 5}
+		"schatten_der_eile": 2
 	})
 	save_file.call("save_now")
 	_check(

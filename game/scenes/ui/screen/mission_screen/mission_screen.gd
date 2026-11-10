@@ -124,10 +124,7 @@ func _refresh_resources() -> void:
 		spent += int(costs.get(option_id, 0))
 	var remaining: int = mission.resource_pool + gathered - spent
 	lichttropfen_label.text = "Lichttropfen: %d" % remaining
-	var freundschaft: int = 0
-	for value in SaveFile.mission_state.get("character_freundschaft", {}).values():
-		freundschaft += int(value)
-	freundschaft_label.text = "Freundschafts-Funken: %d" % freundschaft
+	freundschaft_label.text = "Freundschafts-Funken: %d" % int(SaveFile.resources.get("freundschaft", 0))
 	mut_sterne_label.text = "Mut-Sterne: %d" % int(SaveFile.mission_state.get("mut_sterne", 0))
 	rhythmus_label.text = "Rhythmus-Noten: %d" % int(SaveFile.mission_state.get("rhythmus", 0))
 
@@ -314,12 +311,12 @@ func _on_confirm_button_up() -> void:
 		&"vote":
 			var wishes: Dictionary = {}
 			var freundschaft: Dictionary = {}
-			var saved_freundschaft: Dictionary = SaveFile.mission_state.get("character_freundschaft", {})
+			var shared_freundschaft: int = int(SaveFile.resources.get("freundschaft", 0))
 			for character: Dictionary in mission.characters:
 				if not character.can_vote:
 					continue
 				wishes[character.id] = character.wish
-				freundschaft[character.id] = int(saved_freundschaft.get(character.id, 0))
+				freundschaft[character.id] = shared_freundschaft
 			var winner: StringName = Decision.vote(wishes, freundschaft, listened_counts)
 			built = []
 			if winner != &"":
@@ -384,12 +381,10 @@ func _apply_effects(effects: Dictionary, outcome_id: StringName) -> void:
 	if effects.has("mut_sterne"):
 		SaveFile.mission_state["mut_sterne"] = int(SaveFile.mission_state.get("mut_sterne", 0)) + int(effects["mut_sterne"])
 	if effects.has("freundschaft"):
-		var per_character: int = int(effects["freundschaft"])
-		var characters: Dictionary = SaveFile.mission_state.get("character_freundschaft", {})
-		for character: Dictionary in mission.characters:
-			var character_id: StringName = character.id
-			characters[character_id] = int(characters.get(character_id, 0)) + per_character
-		SaveFile.mission_state["character_freundschaft"] = characters
+		var amount: int = int(effects["freundschaft"])
+		var total: int = int(SaveFile.resources.get("freundschaft", 0)) + amount
+		SaveFile.resources["freundschaft"] = total
+		SignalBus.resource_updated.emit("freundschaft", total, amount, "mission")
 	if effects.has("rhythmus"):
 		SaveFile.mission_state["rhythmus"] = int(SaveFile.mission_state.get("rhythmus", 0)) + int(effects["rhythmus"])
 	if effects.has("schatten_der_eile"):

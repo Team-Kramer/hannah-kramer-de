@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="SubstanceData" load_steps=2 format=3 uid="uid://dysy88fy28bx5"]
+[gd_resource type="Resource" script_class="SubstanceData" load_steps=2 format=3 uid="uid://ce8umwqq5trye"]
 
 [ext_resource type="Script" uid="uid://btpnmfhvup80q" path="res://resources/game_data/substance_data/substance_data.gd" id="1_whtwv"]
 

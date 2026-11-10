@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=85 format=4 uid="uid://d276arnrjws3i"]
 
-[ext_resource type="FontFile" uid="uid://q32pdsh1f0q8" path="res://assets/font/noto_sans/woff/noto_sans.woff" id="2_mxpaq"]
+[ext_resource type="FontFile" uid="uid://bj38fdx6ujlum" path="res://assets/font/noto_sans/woff/noto_sans.woff" id="2_mxpaq"]
 [ext_resource type="Texture2D" uid="uid://bvpjbal72ck7r" path="res://resources/theme/dark/icons.svg" id="2_plspm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ymaf"]

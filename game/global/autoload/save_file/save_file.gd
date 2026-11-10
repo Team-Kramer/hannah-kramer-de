@@ -20,8 +20,7 @@ var mission_state: Dictionary = {
 	"unlocks": [],
 	"mut_sterne": 0,
 	"rhythmus": 0,
-	"schatten_der_eile": 0,
-	"character_freundschaft": {}
+	"schatten_der_eile": 0
 }
 var workers: Dictionary = {}
 var substances: Dictionary = {}
@@ -618,8 +617,7 @@ func _get_mission_state(save_data: Dictionary) -> Dictionary:
 		"unlocks": [],
 		"mut_sterne": 0,
 		"rhythmus": 0,
-		"schatten_der_eile": 0,
-		"character_freundschaft": {}
+		"schatten_der_eile": 0
 	}
 	var stored_state: Variant = save_data.get("mission_state", {})
 	if not stored_state is Dictionary:
