@@ -31,7 +31,7 @@
 				Am Anger 4<br />
 				33758 Schloß Holte-Stukenbrock<br />
 				Deutschland<br />
-				E-Mail: <a href="mailto:info@julia-kramer.de">info@julia-kramer.de</a>
+				E-Mail: <a href="mailto:info@martin-kramer.com">info@martin-kramer.com</a>
 			</p>
 
 			<h2>2. Hosting über GitHub Pages</h2>
@@ -81,7 +81,7 @@
 				Fragen zum Datenschutz und Anfragen zur Ausübung deiner Rechte aus Art. 15–22 DSGVO
 				(Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch)
 				richtest du an Martin Kramer unter
-				<a href="mailto:info@julia-kramer.de">info@julia-kramer.de</a>. Du kannst dich außerdem
+				<a href="mailto:info@martin-kramer.com">info@martin-kramer.com</a>. Du kannst dich außerdem
 				bei einer Datenschutzaufsichtsbehörde beschweren, insbesondere bei der
 				<a href="https://www.ldi.nrw.de/" rel="noreferrer">
 					Landesbeauftragten für Datenschutz und Informationsfreiheit Nordrhein-Westfalen

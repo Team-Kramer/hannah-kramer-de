@@ -28,7 +28,7 @@
 
 			<h2>Kontakt</h2>
 			<p>
-				E-Mail: <a href="mailto:info@julia-kramer.de">info@julia-kramer.de</a>
+				E-Mail: <a href="mailto:info@martin-kramer.com">info@martin-kramer.com</a>
 			</p>
 
 			<h2>Verantwortlich für journalistisch-redaktionelle Inhalte</h2>
