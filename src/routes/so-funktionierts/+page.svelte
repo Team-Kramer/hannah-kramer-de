@@ -104,10 +104,11 @@
 		<section class="mt-12">
 			<h2 class="text-3xl font-extrabold text-text">Datenschutz</h2>
 			<p class="mt-4 text-lg leading-relaxed text-text-secondary">
-				<strong>Es wird nichts gespeichert, nichts getrackt, nichts übertragen.</strong>
-				Dein Spielstand liegt ausschließlich in deinem Browser (localStorage).
-				Es gibt keine Accounts, keine Werbung, keine Cookies.
-				Die Seite ist komplett statisch und wird auf GitHub Pages gehostet.
+				Es gibt keine Accounts, keine Werbung und keine Tracking-Cookies. Dein Spielstand wird
+				lokal in deinem Browser gespeichert (IndexedDB) und nicht an einen Server übertragen.
+				Wenn du „Welt teilen“ nutzt, enthält der von dir erzeugte Link einen Spielstand im
+				URL-Fragment; beim Teilen können andere diesen Stand öffnen. Die Seite ist statisch und
+				wird auf GitHub Pages gehostet.
 			</p>
 		</section>
 

@@ -7,8 +7,9 @@
 	<title>Datenschutz — Hannahs Lichtwald</title>
 	<meta
 		name="description"
-		content="Datenschutzerklärung: Es wird nichts getrackt. Keine Cookies, keine Analyse, keine Accounts. Spielstände bleiben im Browser."
+		content="Datenschutzhinweise zu Hannahs Lichtwald, zum GitHub-Pages-Hosting und zum lokalen Spielstand."
 	/>
+	<link rel="canonical" href="https://hannah-kramer.de/datenschutz/" />
 </svelte:head>
 
 <Header />
@@ -19,57 +20,76 @@
 		<div class="prose-lichtwald mt-8">
 			<h2>Die kurze Version</h2>
 			<p>
-				<strong>Es wird nichts getrackt.</strong> Keine Cookies, keine Analyse-Tools,
-				keine Werbung, keine Accounts. Wenn du diese Seite verlässt, wissen wir
-				nichts von dir — und wissen auch nichts, während du hier bist.
+				Es gibt keine Analyse- oder Marketingdienste, keine Tracking-Cookies und keine Accounts.
+				GitHub Pages verarbeitet beim Ausliefern der Website technische Verbindungsdaten,
+				einschließlich der IP-Adresse, zu Sicherheitszwecken.
 			</p>
 
-			<h2>1. Verantwortliche Stelle</h2>
+			<h2>1. Verantwortlicher</h2>
 			<p>
-				<!-- TODO: echte Angaben eintragen -->
-				Hannah Kramer, [Anschrift eintragen], E-Mail: [E-Mail eintragen].
+				Martin Kramer<br />
+				Am Anger 4<br />
+				33758 Schloß Holte-Stukenbrock<br />
+				Deutschland<br />
+				E-Mail: <a href="mailto:info@julia-kramer.de">info@julia-kramer.de</a>
 			</p>
 
-			<h2>2. Was passiert mit deinen Daten</h2>
+			<h2>2. Hosting über GitHub Pages</h2>
 			<p>
-				Beim Aufruf der Website werden technisch notwendige Server-Logdaten
-				(Adresse des anfragenden Servers, Zeitpunkt, aufgerufene Seite) durch den
-				Hosting-Dienst <strong>GitHub Pages</strong> (GitHub Inc., USA) verarbeitet.
-				Diese Daten sind für die Auslieferung der Seite erforderlich und werden
-				automatisch gelöscht.
+				Diese Website wird als statische Website über GitHub Pages bereitgestellt. Beim Aufruf
+				können technische Verbindungsdaten, einschließlich der IP-Adresse, durch GitHub zu
+				Sicherheitszwecken protokolliert werden. GitHub, Inc. hat seinen Sitz in 88 Colin P. Kelly
+				Jr. Street, San Francisco, CA 94107, USA. GitHub beschreibt seine Verarbeitung in der
+				<a
+					href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+					rel="noreferrer"
+				>GitHub Privacy Statement</a
+				>.
 			</p>
 
-			<h2>3. Das Spiel — wo liegt dein Spielstand</h2>
+			<h2>3. Das Spiel und dein Spielstand</h2>
 			<p>
-				Der Spielstand von Mission 01 wird <strong>ausschließlich lokal in deinem
-				Browser</strong> gespeichert (IndexedDB / localStorage). Er verlässt dein
-				Gerät nicht, wird nicht übertragen und nicht ausgewertet. Du kannst ihn
-				jederzeit löschen, indem du die Browser-Daten für diese Seite löschst.
+				Der Spielstand wird von der Spiel-Engine lokal in deinem Browser in IndexedDB
+				gespeichert. Die Website überträgt ihn nicht an einen Server. Du kannst ihn löschen,
+				indem du die Browserdaten für diese Website entfernst.
+			</p>
+			<p>
+				Wenn du im Spiel „Welt teilen“ verwendest, wird ein Link mit deinem Spielstand in den
+				URL-Fragmentteil (nach dem Zeichen #) aufgenommen. Der Fragmentteil wird nicht bei der
+				Seitenanfrage an den Hosting-Server gesendet. Wenn du den Link mit anderen teilst, können
+				diese den darin enthaltenen Spielstand öffnen.
 			</p>
 
-			<h2>4. Keine Cookies, keine Analyse, keine Werbung</h2>
+			<h2>4. Keine Analyse- oder Marketingdienste</h2>
 			<p>
-				Diese Website setzt keine Cookies. Es werden keine Tracking-, Analyse- oder
-				Werbemodule eingebunden. Es gibt keine Einbettungen externer Inhalte
-				(keine Videos, keine Karten, keine Schriftarten von Drittservern).
+				Diese Website verwendet keine Tracking-Cookies und bindet keine Analyse- oder
+				Marketingdienste ein. Es werden keine externen Inhalte wie Videos, Karten oder
+				Schriftarten von Drittservern geladen. Beim Aufruf externer Links gelten die
+				Datenschutzbestimmungen des jeweiligen Anbieters.
 			</p>
 
-			<h2>5. Kontakt</h2>
+			<h2>5. Zweck und Rechtsgrundlage</h2>
 			<p>
-				Fragen zum Datenschutz beantwortet Hannah Kramer unter
-				[E-Mail eintragen].
+				Die Bereitstellung der Website und die Abwehr technischer Angriffe dienen dem Interesse
+				an einem sicheren und funktionsfähigen Online-Angebot. Als Rechtsgrundlage für die
+				hierfür erforderliche Verarbeitung kommt insbesondere Art. 6 Abs. 1 lit. f DSGVO in
+				Betracht.
 			</p>
 
-			<h2>6. Rechte der betroffenen Person</h2>
+			<h2>6. Kontakt und deine Rechte</h2>
 			<p>
-				Da praktisch keine personenbezogenen Daten verarbeitet werden, gelten die
-				Rechte aus Art. 15–22 DSGVO (Auskunft, Berichtigung, Löschung,
-				Einschränkung, Datenübertragbarkeit, Widerspruch) in dem engen Rahmen,
-				in dem Server-Logdaten vorliegen.
+				Fragen zum Datenschutz und Anfragen zur Ausübung deiner Rechte aus Art. 15–22 DSGVO
+				(Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch)
+				richtest du an Martin Kramer unter
+				<a href="mailto:info@julia-kramer.de">info@julia-kramer.de</a>. Du kannst dich außerdem
+				bei einer Datenschutzaufsichtsbehörde beschweren, insbesondere bei der
+				<a href="https://www.ldi.nrw.de/" rel="noreferrer">
+					Landesbeauftragten für Datenschutz und Informationsfreiheit Nordrhein-Westfalen
+				</a>.
 			</p>
 
 			<p class="text-sm text-text-secondary">
-				Stand: Februar 2026. <!-- TODO: rechtlich prüfen lassen, bevor live -->
+				Stand: November 2026.
 			</p>
 		</div>
 	</div>

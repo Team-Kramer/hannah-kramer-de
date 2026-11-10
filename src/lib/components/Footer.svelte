@@ -22,6 +22,7 @@
 					['/missionen', t.nav.missionen],
 					['/spiel/', t.nav.spiel],
 					['/so-funktionierts', t.nav.soFunktionierts],
+					['/ueber/', 'Über das Projekt'],
 					['/blog', t.nav.blog]
 				] as [href, label]}
 					<li>
