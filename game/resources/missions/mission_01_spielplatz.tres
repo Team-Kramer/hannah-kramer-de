@@ -6,21 +6,14 @@
 script = ExtResource("1_mission")
 id = "mission_spielplatz"
 title = "Der kaputte Spielplatz"
-intro_text = """Im Lichtwald gibt es einen alten Spielplatz.
-Die Schaukel hängt schief. Die Rutsche hat ein Loch.
-Und Juan kommt mit seinem Rollstuhl gar nicht richtig hin.
-
-Plötzlich findet Oma Linde einen leuchtenden Schatz –
-120 Lichttropfen!
-
-Alle haben Ideen, was damit passieren soll.
-Aber wer entscheidet eigentlich?"""
+intro_text = "Im Lichtwald gibt es einen alten Spielplatz.\nDie Schaukel hängt schief. Die Rutsche hat ein Loch.\nUnd Juan kommt mit seinem Rollstuhl gar nicht richtig hin.\n\nPlötzlich findet Oma Linde einen leuchtenden Schatz –\n120 Lichttropfen!\n\nAlle haben Ideen, was damit passieren soll.\nAber wer entscheidet eigentlich?"
 characters = Array[Dictionary]([
-	{"id": &"juan", "name": &"Juan", "wish": &"barrierefrei", "mood": &"Hoffnungsvoll, etwas schüchtern", "dialogs": ["Einen Weg ohne Stufen… und eine Schaukel, in die ich reinrollkommen kann.", "Als ob ich unsichtbar bin. Dabei möchte ich doch einfach nur dabei sein."]},
-	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
-	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
-	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
-	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]}
+	{"id": &"juan", "name": &"Juan", "wish": &"barrierefrei", "mood": &"Hoffnungsvoll, etwas schüchtern", "can_vote": true, "dialogs": ["Einen Weg ohne Stufen… und eine Schaukel, in die ich reinrollkommen kann.", "Als ob ich unsichtbar bin. Dabei möchte ich doch einfach nur dabei sein."]},
+	{"id": &"lina", "name": &"Lina", "wish": &"rutsche", "mood": &"Aufgeregt, laut", "can_vote": true, "dialogs": ["Eine riesige Rutsche! Und ganz viel zum Klettern! Das wäre soo cool!", "Juan kann doch zuschauen… oder?"]},
+	{"id": &"tobi", "name": &"Tobi", "wish": &"fussball", "mood": &"Ungeduldig, energiegeladen", "can_vote": true, "dialogs": ["Fußballtor! Sofort! Dann können wir endlich richtig bolzen!", "Der alte Spielplatz war eh langweilig."]},
+	{"id": &"oma_linde", "name": &"Oma Linde", "wish": &"ruhebereich", "mood": &"Ruhig, weise", "can_vote": true, "dialogs": ["Ein Platz für alle. Auch für die, die einfach nur sitzen und zuschauen wollen.", "Manchmal ist das Lauteste nicht das Wichtigste."]},
+	{"id": &"schatten_der_eile", "name": &"Schatten der Eile", "wish": &"alles_halb", "mood": &"Drängend, ungeduldig", "can_vote": false, "dialogs": ["Nicht so viel reden! Einfach machen! Das Schnellste und Lauteste gewinnt!"]},
+	{"id": &"lichtkatze", "name": &"Lichtkatze", "wish": &"", "mood": &"Sanft, leuchtend", "can_vote": false, "portrait": "res://assets/image/art/cat.png", "dialogs": ["Ich komme vom Bergkamm. Jeder Lichttropfen, den ihr gibt, leuchtet für alle.", "Hört in euch hinein. Die richtige Wahl ist die, bei der niemand zurückbleibt."]}
 ])
 resource_pool = 120
 options = Array[Dictionary]([
@@ -31,8 +24,16 @@ options = Array[Dictionary]([
 	{"id": &"alles_halb", "label": &"Alles nur halb", "cost": 120, "effect": &"Niemand ist richtig zufrieden"}
 ])
 decision_modes = Array[String](["self", "vote", "moderate"])
+comic_panels = Array[Dictionary]([
+	{"image": "", "caption": "Am Rande des Lichtwaldes, wo ein sanfter Bergzug den Wald umarmt, ist der Spielplatz kaputt.", "character": ""},
+	{"image": "", "caption": "Die Kinder des Waldes versammeln sich, um zu überlegen, was sie mit den 120 Lichttropfen tun können.", "character": ""},
+	{"image": "", "caption": "Aus Richtung des Bergkamms kommt die Lichtkatze, um zu helfen.", "character": "lichtkatze"},
+	{"image": "", "caption": "Jede Stimme hat eine Idee. Wer entscheidet, was gebaut wird?", "character": ""},
+	{"image": "", "caption": "Deine Entscheidung wird den Wald verändern.", "character": ""}
+])
+gather = {"label": "Berg-Licht sammeln", "amount": 10, "cooldown": 2.0, "max": 60}
 outcomes = Array[Dictionary]([
-	{"id": &"good", "condition": &"has_barrierefrei and option_count >= 2", "result_text": "Juan rollt zum ersten Mal auf den Spielplatz.\nEr lacht. Die anderen klatschen.\nOma Linde sagt leise: „So sieht ein Ort für alle aus.“\n\nIm Lichtwald entsteht etwas Neues: der erste Licht-Rat.", "effects": {"mut_sterne": 15, "freundschaft": 20, "unlocks": &"licht_rat"}},
-	{"id": &"middle", "condition": &"only loudest idea built (rutsche or fussball)", "result_text": "Der Spielplatz ist lauter und bunter.\nJuan sitzt am Rand und schaut zu.\nEtwas in Hannah spürt: Das war nicht ganz richtig.", "effects": {"schatten_der_eile": 1}},
-	{"id": &"weak", "condition": &"alles_halb built or juan forgotten", "result_text": "Niemand ist wirklich glücklich.\nDer Spielplatz fühlt sich immer noch kaputt an – nur anders.", "effects": {"retry": true}}
+	{"id": &"good", "condition": &"has_barrierefrei and option_count >= 2", "result_text": "Juan rollt zum ersten Mal auf den Spielplatz.\nEr lacht. Die anderen klatschen.\nOma Linde sagt leise: „So sieht ein Ort für alle aus.“\n\nIm Lichtwald entsteht etwas Neues: der erste Licht-Rat.", "comic_caption": "Juan rollt in den Spielplatz hinein. Alle klatschen. Aus Richtung des Bergkamms leuchtet es warm – die Lichtkatze ist zufrieden.", "effects": {"mut_sterne": 15, "freundschaft": 20, "unlocks": &"licht_rat"}},
+	{"id": &"middle", "condition": &"only loudest idea built (rutsche or fussball)", "result_text": "Der Spielplatz ist lauter und bunter.\nJuan sitzt am Rand und schaut zu.\nEtwas in Hannah spürt: Das war nicht ganz richtig.", "comic_caption": "Der Spielplatz ist laut und bunt. Juan sitzt am Rand. Die Lichtkatze schaut sanft zu ihm und wartet auf einen neuen Versuch.", "effects": {"schatten_der_eile": 1}},
+	{"id": &"weak", "condition": &"alles_halb built or juan forgotten", "result_text": "Niemand ist wirklich glücklich.\nDer Spielplatz fühlt sich immer noch kaputt an – nur anders.", "comic_caption": "Der Spielplatz fühlt sich seltsam an. Die Lichtkatze leckt sich die Pfote und nickt: „Wir können es noch einmal versuchen.“", "effects": {"retry": true}}
 ])

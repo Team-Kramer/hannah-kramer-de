@@ -7,7 +7,7 @@ const SAVE_FILE_PICKER_SCENE: PackedScene = preload(
 const SOUL_SCENE: PackedScene = preload("res://scenes/autostart/soul_screen/soul_screen.tscn")
 const END_SCENE: PackedScene = preload("res://scenes/autostart/end/end.tscn")
 const MISSION_SCREEN_SCENE: PackedScene = preload(
-	"res://scenes/ui/screen/mission_screen/mission_screen.tscn"
+	"res://scenes/ui/screen/mission_screen/mission_screen_diary.tscn"
 )
 
 const SCENE_MAP: Dictionary = {

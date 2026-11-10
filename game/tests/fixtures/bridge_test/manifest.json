@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "name": "Rule Bridge Test",
+  "description": "Minimal package for the RuleBridge headless test.",
+  "files": [
+    "locations.json",
+    "resources.json",
+    "rules.json",
+    "stories/story_test.json",
+    "stories/story_relationships.json",
+    "npcs/mira.json",
+    "npcs/bruno.json",
+    "locales/de.json",
+    "locales/en.json"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "rules": [
+    {
+      "id": "r1_stein_first",
+      "trigger": { "event": "resource.totalAtLeast", "resourceId": "stein", "value": 1 },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "unlock", "targetType": "producer", "targetId": "axe" },
+        { "op": "flag.set", "flagId": "lumberjack", "value": true },
+        { "op": "flag.set", "flagId": "soul", "value": true },
+        { "op": "event.record", "eventId": "cat_intro_yes" }
+      ]
+    },
+    {
+      "id": "r2_mira_choice",
+      "trigger": { "event": "conversation.choice", "conversationId": "mira_talk", "choiceId": "0" },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "relationship.adjust", "characterId": "mira", "amount": 1 },
+        { "op": "flag.set", "flagId": "mira_listened", "value": true }
+      ]
+    }
+  ]
+}

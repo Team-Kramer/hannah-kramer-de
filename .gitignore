@@ -19,6 +19,7 @@ build/
 # Godot (game/ tree) — addons/ are KEPT (godot-ui, raycast, voxel) per triage
 game/.godot/
 game/.export/
+static/spiel/engine/
 
 # misc
 *.log

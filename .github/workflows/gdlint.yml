@@ -26,11 +26,5 @@ jobs:
         run: pip install "gdtoolkit==4.*"
 
       - name: Run gdlint
-        run: |
-          gdlint \
-            game/assets \
-            game/global \
-            game/resources \
-            game/scenes \
-            --config game/.gdlint.yml \
-            --problems-threshold 1
+        working-directory: game
+        run: gdlint assets global resources scenes tests

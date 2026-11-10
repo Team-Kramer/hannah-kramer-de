@@ -11,6 +11,10 @@ record; the generator (human or AI) produces it.
   (`class_name MissionData`, a Godot `Resource`).
 - Reference instance: [`game/resources/missions/mission_01_spielplatz.tres`](../game/resources/missions/mission_01_spielplatz.tres)
 
+Mission 01 has the internal resource id `mission_spielplatz` and the public
+route/deep-link slug `mission-01`. The web URL slug is an explicit alias, not a
+second mission id.
+
 ## Record shape (JSON)
 
 ```json
@@ -24,6 +28,7 @@ record; the generator (human or AI) produces it.
       "name": "Juan",
       "wish": "barrierefrei",
       "mood": "Hoffnungsvoll, etwas schuechtern",
+      "can_vote": true,
       "dialogs": ["Einen Weg ohne Stufen..."]
     }
   ],
@@ -50,7 +55,7 @@ record; the generator (human or AI) produces it.
 | `id` | string | yes | `mission_*`, snake_case, unique |
 | `title` | string | yes | <= 60 chars, child-readable |
 | `intro_text` | string | yes | 3-5 short sentences, ends with a question |
-| `characters` | array | yes | >= 3; each has `id`, `name`, `wish`, `mood`, `dialogs[]` |
+| `characters` | array | yes | >= 3; each has `id`, `name`, `wish`, `mood`, `can_vote` (boolean), `dialogs[]` |
 | `resource_pool` | int | yes | >= 50; sum of the two cheapest good-enabling options <= pool |
 | `options` | array | yes | >= 3; each `cost` > 0; at most one `alles_halb`-style option |
 | `decision_modes` | string[] | yes | subset of `["self", "vote", "moderate"]`, >= 1 |
@@ -64,6 +69,7 @@ record; the generator (human or AI) produces it.
 2. `good` requires the character who needed help to be included.
 3. No timers, no fail-states beyond `retry`, no scary characters in `characters`.
 4. Language: German first, short sentences, no jargon.
+5. A character with `can_vote: false` may influence the story dialogue but never determines the vote.
 
 ## Generation flow (future)
 

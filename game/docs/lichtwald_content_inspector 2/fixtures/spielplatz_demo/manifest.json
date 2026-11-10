@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "name": "Spielplatz Demo",
+  "description": "Small F1 fixture for locations, resources, story, NPCs, rules, encounters, locales, and art references.",
+  "files": [
+    "combat.json",
+    "locations.json",
+    "resources.json",
+    "rules.json",
+    "stories/story_spielplatz.json",
+    "npcs/juan.json",
+    "locales/de.json",
+    "locales/en.json",
+    "assets.json"
+  ]
+}

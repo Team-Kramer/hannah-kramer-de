@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "resources": [
+    {
+      "id": "holz",
+      "kind": "stock",
+      "nameKey": "resource.holz.name",
+      "iconAssetId": "resource_holz",
+      "initialAmount": 0,
+      "bounds": {
+        "min": 0,
+        "max": 999
+      }
+    },
+    {
+      "id": "lichttropfen",
+      "kind": "stock",
+      "nameKey": "resource.lichttropfen.name",
+      "iconAssetId": "resource_lichttropfen",
+      "initialAmount": 0,
+      "bounds": {
+        "min": 0
+      },
+      "x-authoring": {
+        "review-note": "Keep unknown fields unchanged when round-tripping."
+      }
+    }
+  ],
+  "producers": [
+    {
+      "id": "gather_holz",
+      "kind": "playerAction",
+      "locationId": "lichtwald_spielplatz",
+      "outputs": {
+        "holz": 1
+      },
+      "costs": {},
+      "cooldownSeconds": 0,
+      "maxUses": null,
+      "availableWhen": {
+        "all": []
+      }
+    }
+  ],
+  "recipes": [
+    {
+      "id": "make_lichttropfen",
+      "nameKey": "recipe.make_lichttropfen.name",
+      "locationId": "lichtwald_spielplatz",
+      "inputs": {
+        "holz": 2
+      },
+      "outputs": {
+        "lichttropfen": 1
+      },
+      "availableWhen": {
+        "all": [
+          {
+            "path": "resources.holz",
+            "op": "gte",
+            "value": 2
+          }
+        ]
+      }
+    }
+  ],
+  "workerRoles": []
+}

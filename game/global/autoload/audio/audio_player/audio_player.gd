@@ -65,6 +65,8 @@ func is_playing() -> bool:
 
 
 func play(restart: bool = true) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
 	if restart:
 		_idle_playback_position = 0.0
 		_combat_playback_position = 0.0

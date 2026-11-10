@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lichtwald Content Inspector</title>
+  <link rel="stylesheet" href="css/app.css" />
+  <!-- Lightweight graph lib -->
+  <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Toolbar -->
+    <header class="toolbar">
+      <div class="brand">
+        <span class="logo">🖤</span>
+        <div>
+          <strong>Lichtwald Content Inspector</strong>
+          <small>Standalone JSON Workbench · v0.2</small>
+        </div>
+      </div>
+
+      <div class="toolbar-actions">
+        <button id="btn-load" class="btn primary" title="Package-Ordner laden">📦 Load Package</button>
+        <button id="btn-open-bundle" class="btn" title="Package-Bundle öffnen">🗂 Open Bundle</button>
+        <button id="btn-save" class="btn" disabled title="Package-Bundle herunterladen">💾 Export Bundle</button>
+        <button id="btn-export-folder" class="btn" disabled title="Package-Dateien in einen neuen Ordner schreiben">📁 Export Folder</button>
+        <button id="btn-validate" class="btn" disabled>✅ Validate</button>
+        <button id="btn-new" class="btn" disabled>＋ New Entity</button>
+        <span class="sep"></span>
+        <button id="btn-ai" class="btn ghost" title="Später: AI-Workflow">🤖 AI Workflow (soon)</button>
+      </div>
+
+      <div class="package-info" id="package-info">No package loaded</div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="main">
+      <!-- Left: Entity Lists -->
+      <aside class="sidebar">
+        <div class="tabs" id="entity-tabs">
+          <button class="tab active" data-type="stories">Stories</button>
+          <button class="tab" data-type="locations">Locations</button>
+          <button class="tab" data-type="resources">Resources</button>
+          <button class="tab" data-type="npcs">NPCs</button>
+          <button class="tab" data-type="combat">Combat</button>
+          <button class="tab" data-type="rules">Rules</button>
+          <button class="tab" data-type="assets">Assets</button>
+          <button class="tab" data-type="locales">Locales</button>
+        </div>
+        <div class="entity-list" id="entity-list"></div>
+        <div class="sidebar-footer">
+          <small id="entity-count">0 entities</small>
+        </div>
+      </aside>
+
+      <!-- Center: Editor Area -->
+      <section class="editor">
+        <div class="editor-tabs">
+          <button class="etab active" data-view="inspector">Inspector</button>
+          <button class="etab" data-view="table">Table</button>
+          <button class="etab" data-view="graph">Graph</button>
+          <button class="etab" data-view="event-rules">Event Rules</button>
+          <button class="etab" data-view="preview">Preview</button>
+          <button class="etab" data-view="coedit">Co-edit</button>
+          <button class="etab" data-view="raw">Raw JSON</button>
+          <button class="etab" data-view="validation">Validation</button>
+        </div>
+
+        <!-- Inspector View -->
+        <div class="view active" id="view-inspector">
+          <div class="inspector-header" id="inspector-header">
+            <h2>Select an entity</h2>
+            <p class="muted">Load a package and click an item on the left.</p>
+          </div>
+          <div class="inspector-form" id="inspector-form"></div>
+        </div>
+
+        <!-- Domain table -->
+        <div class="view" id="view-table">
+          <div class="table-heading">
+            <h2 id="table-title">Stories</h2>
+            <span class="muted" id="table-count">0 entities</span>
+          </div>
+          <div id="entity-table" class="entity-table-wrap"></div>
+        </div>
+
+        <!-- Graph View -->
+        <div class="view" id="view-graph">
+          <div class="graph-toolbar">
+            <button class="btn small" id="btn-graph-story">Story Graph</button>
+            <button class="btn small" id="btn-graph-deps">Dependency Graph</button>
+            <button class="btn small" id="btn-graph-fit">Fit</button>
+          </div>
+          <div id="graph-container"></div>
+        </div>
+
+        <!-- Event rule matrix -->
+        <div class="view" id="view-event-rules">
+          <div class="table-heading">
+            <div>
+              <h2>Event rules</h2>
+              <p class="muted">Trigger → condition → effects. Select a rule to inspect its authored JSON.</p>
+            </div>
+            <label class="event-rule-search-label">
+              <span class="sr-only">Filter event rules</span>
+              <input id="event-rule-search" type="search" placeholder="Filter rules…" />
+            </label>
+          </div>
+          <div id="event-rule-count" class="muted"></div>
+          <div id="event-rules-table" class="entity-table-wrap"></div>
+        </div>
+
+        <!-- Three-way co-edit review -->
+        <div class="view" id="view-coedit">
+          <div class="coedit-header">
+            <div>
+              <h2>Co-edit review</h2>
+              <p class="muted">
+                Compare this package and an edited bundle against the package version loaded as their shared base.
+                Separate edits merge; conflicting edits and possible ID renames block application.
+              </p>
+            </div>
+            <div class="coedit-actions">
+              <button id="btn-open-merge-bundle" class="btn" disabled>Choose Edited Bundle</button>
+              <button id="btn-apply-merge" class="btn primary" disabled>Apply Validated Merge</button>
+            </div>
+          </div>
+          <div id="coedit-summary" class="muted">Load a package to begin.</div>
+          <div id="coedit-report" class="coedit-report" aria-live="polite"></div>
+        </div>
+
+        <!-- Read-only story preview -->
+        <div class="view" id="view-preview">
+          <div class="preview-toolbar">
+            <label>Story <select id="preview-story"></select></label>
+            <label>Language <select id="preview-locale"></select></label>
+            <span class="muted">Preview only · choices do not change package or game state</span>
+          </div>
+          <div id="preview-resource-state" class="preview-state"></div>
+          <div id="story-preview" class="story-preview">
+            <p class="muted">Load a package with a story to preview its panels.</p>
+          </div>
+        </div>
+
+        <!-- Raw JSON -->
+        <div class="view" id="view-raw">
+          <textarea id="raw-json" spellcheck="false" placeholder="Raw JSON of selected entity appears here…"></textarea>
+          <div class="raw-actions">
+            <button class="btn small" id="btn-apply-raw">Apply Changes</button>
+            <span class="muted" id="raw-status"></span>
+          </div>
+        </div>
+
+        <!-- Validation -->
+        <div class="view" id="view-validation">
+          <div class="validation-header">
+            <h3>Validation Report</h3>
+            <button class="btn small" id="btn-revalidate">Re-run</button>
+          </div>
+          <div id="validation-log" class="validation-log"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Status Bar -->
+    <footer class="statusbar">
+      <span id="status">Ready · Standalone mode (no Godot required)</span>
+      <span id="dirty-indicator" class="hidden">● modified</span>
+    </footer>
+  </div>
+
+  <!-- Hidden file inputs -->
+  <input type="file" id="folder-input" webkitdirectory directory multiple hidden />
+  <input type="file" id="file-input" accept=".json,application/json" hidden />
+  <input type="file" id="merge-file-input" accept=".json,application/json" hidden />
+
+  <script src="js/package_loader.js"></script>
+  <script src="js/condition_dsl.js"></script>
+  <script src="js/schema.js"></script>
+  <script src="js/validator.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/merge.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

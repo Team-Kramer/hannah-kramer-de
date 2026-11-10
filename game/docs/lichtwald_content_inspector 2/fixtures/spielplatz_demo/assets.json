@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "assets": [
+    {
+      "id": "location_spielplatz_background",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Wide forest clearing with an old playground at the edge and a distant mountain ridge. Calm daylight, inviting colors, clear focal point."
+    },
+    {
+      "id": "resource_holz",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "One small, cleanly shaped piece of gathered wood; recognizable at icon size."
+    },
+    {
+      "id": "resource_lichttropfen",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "A small warm drop of light with a clear silhouette; recognizable at icon size."
+    },
+    {
+      "id": "story_spielplatz_opening",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Comic panel of the forest-edge playground and distant mountain ridge; establish the setting without ominous or threatening detail."
+    },
+    {
+      "id": "story_spielplatz_repair_choice",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "The children look together at the uneven playground entrance and consider a smoother route."
+    },
+    {
+      "id": "story_spielplatz_path_repaired",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Children celebrate a sturdy, smooth path into the playground; show cooperation and inclusion."
+    },
+    {
+      "id": "story_spielplatz_waited",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "The children pause beside the playground and make a simple plan to gather what they need."
+    },
+    {
+      "id": "juan_portrait",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Warm, friendly portrait of Juan, a child who uses a wheelchair; age-appropriate and expressive."
+    },
+    {
+      "id": "juan_playground_wish",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Juan points toward the playground entrance while sharing his wish to join the others."
+    },
+    {
+      "id": "juan_playground_thanks",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Juan smiles as the children listen and plan together."
+    },
+    {
+      "id": "juan_playground_later",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "Juan gently redirects the conversation; keep the moment calm and respectful."
+    },
+    {
+      "id": "enemy_knotted_shadow",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "A small, non-graphic knot of shadow with a worried expression; clearly part of the good-versus-evil conflict, but not frightening or violent."
+    },
+    {
+      "id": "encounter_playground_shadow",
+      "type": "image",
+      "status": "placeholder",
+      "artBrief": "A child-friendly comic panel in which the children face the knotted shadow together; no weapons, injury, or graphic impact."
+    }
+  ]
+}

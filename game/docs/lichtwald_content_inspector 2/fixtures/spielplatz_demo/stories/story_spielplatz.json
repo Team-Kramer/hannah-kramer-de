@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "story": {
+    "id": "story_spielplatz",
+    "titleKey": "story_spielplatz.title",
+    "startNodeId": "opening",
+    "nodes": [
+      {
+        "id": "opening",
+        "type": "storyBeat",
+        "locationId": "lichtwald_spielplatz",
+        "captionKey": "story_spielplatz.opening.caption",
+        "illustration": {
+          "assetId": "story_spielplatz_opening"
+        },
+        "transitions": [
+          {
+            "id": "meet_juan",
+            "to": "talk_to_juan"
+          }
+        ]
+      },
+      {
+        "id": "talk_to_juan",
+        "type": "conversation",
+        "locationId": "lichtwald_spielplatz",
+        "conversationId": "juan_playground",
+        "captionKey": "story_spielplatz.talk_to_juan.caption",
+        "illustration": {
+          "assetId": "juan_playground_wish"
+        },
+        "transitions": [
+          {
+            "id": "after_conversation",
+            "to": "repair_choice"
+          }
+        ]
+      },
+      {
+        "id": "repair_choice",
+        "type": "decision",
+        "locationId": "lichtwald_spielplatz",
+        "promptKey": "story_spielplatz.repair_choice.prompt",
+        "illustration": {
+          "assetId": "story_spielplatz_repair_choice"
+        },
+        "choices": [
+          {
+            "id": "build_path",
+            "labelKey": "story_spielplatz.repair_choice.build_path.label",
+            "when": {
+              "all": [
+                {
+                  "path": "resources.lichttropfen",
+                  "op": "gte",
+                  "value": 1
+                }
+              ]
+            },
+            "effects": [
+              {
+                "op": "resource.spend",
+                "resourceId": "lichttropfen",
+                "amount": 1
+              }
+            ],
+            "to": "path_repaired"
+          },
+          {
+            "id": "gather_first",
+            "labelKey": "story_spielplatz.repair_choice.gather_first.label",
+            "when": {
+              "all": []
+            },
+            "effects": [],
+            "to": "waited"
+          }
+        ]
+      },
+      {
+        "id": "path_repaired",
+        "type": "outcome",
+        "locationId": "lichtwald_spielplatz",
+        "captionKey": "story_spielplatz.path_repaired.caption",
+        "illustration": {
+          "assetId": "story_spielplatz_path_repaired"
+        },
+        "effects": [
+          {
+            "op": "flag.set",
+            "flagId": "playground_path_repaired",
+            "value": true
+          }
+        ],
+        "transitions": []
+      },
+      {
+        "id": "waited",
+        "type": "outcome",
+        "locationId": "lichtwald_spielplatz",
+        "captionKey": "story_spielplatz.waited.caption",
+        "illustration": {
+          "assetId": "story_spielplatz_waited"
+        },
+        "effects": [],
+        "transitions": [
+          {
+            "id": "try_again",
+            "to": "repair_choice"
+          }
+        ]
+      }
+    ]
+  }
+}

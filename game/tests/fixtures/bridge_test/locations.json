@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "locations": [
+    {
+      "id": "test_clearing",
+      "nameKey": "location.test_clearing.name",
+      "availableWhen": { "all": [] },
+      "producerIds": ["axe"],
+      "recipeIds": [],
+      "encounterIds": []
+    }
+  ]
+}

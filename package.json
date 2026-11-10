@@ -6,6 +6,7 @@
 	"license": "MIT",
 	"type": "module",
 	"scripts": {
+		"predev": "node scripts/prepare-game-dev.mjs",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",

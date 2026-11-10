@@ -34,11 +34,23 @@ layout_mode = 2
 text = "Intro"
 autowrap_mode = 3
 
+[node name="ListenLabel" type="Label" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Wähle eine Figur, um ihre Idee zu hören."
+autowrap_mode = 3
+
 [node name="SceneTextureRect" type="TextureRect" parent="RootMarginContainer/RootVBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 140)
 texture = ExtResource("2_scene")
 expand_mode = 1
+
+[node name="ContinueButton" type="Button" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 56)
+text = "Zu den Stimmen"
 
 [node name="CharactersHBox" type="HBoxContainer" parent="RootMarginContainer/RootVBoxContainer"]
 unique_name_in_owner = true
@@ -48,6 +60,12 @@ theme_override_constants/separation = 16
 [node name="OptionsFlow" type="FlowContainer" parent="RootMarginContainer/RootVBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="ModeHelpLabel" type="Label" parent="RootMarginContainer/RootVBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Du wählst eine oder zwei Ideen. Zusammen dürfen sie höchstens 120 Lichttropfen kosten."
+autowrap_mode = 3
 
 [node name="ModesHBoxContainer" type="HBoxContainer" parent="RootMarginContainer/RootVBoxContainer"]
 layout_mode = 2
@@ -96,8 +114,9 @@ layout_mode = 2
 text = "Outcome"
 autowrap_mode = 3
 
-[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeSelfButton" to="." method="_on_mode_self_button_up"]
-[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeVoteButton" to="." method="_on_mode_vote_button_up"]
-[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer/ModeSelfButton" to="." method="_on_mode_self_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer/ModeVoteButton" to="." method="_on_mode_vote_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ModesHBoxContainer/ModeModerateButton" to="." method="_on_mode_moderate_button_up"]
+[connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ContinueButton" to="." method="_on_continue_button_up"]
 [connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/ConfirmButton" to="." method="_on_confirm_button_up"]
 [connection signal="pressed" from="RootMarginContainer/RootVBoxContainer/BackButton" to="." method="_on_back_button_up"]

@@ -351,6 +351,9 @@ resource_generator_display_name:worker,[noun] an in-game resource,Peasant,Peasan
 resource_generator_display_name:soulstone,[noun] an in-game resource,Soulstone,Soulstone
 resource_generator_display_name:singularity,[noun] an in-game resource,Singularity,Singularity
 resource_generator_display_name:soul,[noun] an in-game resource,Soul,Soul
+resource_generator_display_name:lichttropfen,[noun] an in-game resource,Light Drops,Lichttropfen
+resource_generator_display_name:mut_sterne,[noun] an in-game resource,Courage Stars,Mut-Sterne
+resource_generator_display_name:freundschaft,[noun] an in-game resource,Friendship,Freundschaft
 worker_role_title:clay_digger,work profession / in-game job category,Clay Digger,Clay Digger
 worker_role_title:coal_miner,work profession / in-game job category,Coal Miner,Coal Miner
 worker_role_title:experience,work profession / in-game job category,Experience,Experience
@@ -435,7 +438,6 @@ event_data_text:land_6,diary entry text,There is a deep dark lake stretching alo
 event_data_text:land_7,diary entry text,Growling sounds emerge from the deep dense parts of the forest. Nightmares weave deep inside my psyche.,Growling sounds emerge from the deep dense parts of the forest. Nightmares weave deep inside my psyche.
 event_data_text:land_8,diary entry text,"Vast lands stretch beyond the forest, but I will need a way to navigate them.","Vast lands stretch beyond the forest, but I will need a way to navigate them."
 event_data_text:land_9,diary entry text,"It is exhausting to explore new lands on my own. Sending out some of them instead, sounds like an idea.","It is exhausting to explore new lands on my own. Sending out some of them instead, sounds like an idea."
-event_data_text:land_debug,diary entry text,The Gods have gifted plenty of resources to help you in this showcase.,The Gods have gifted plenty of resources to help you in this showcase.
 event_data_text:resource_generated,diary entry text,You generated {0} {1}.,You generated {0} {1}.
 event_data_text:zero,diary entry text,The world is dark and empty...,The world is dark and empty...
 event_data_text:darkness_1,diary entry text,"Moving deeper into the darkness, I notice my people behind me, faceless figurines... Did they ever bear any humanity?","Moving deeper into the darkness, I notice my people behind me, faceless figurines... Did they ever bear any humanity?"

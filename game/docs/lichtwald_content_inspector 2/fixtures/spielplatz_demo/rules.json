@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "rules": [
+    {
+      "id": "unlock_playground_options",
+      "trigger": {
+        "event": "resource.totalAtLeast",
+        "resourceId": "holz",
+        "value": 2
+      },
+      "when": {
+        "all": []
+      },
+      "effects": [
+        {
+          "op": "unlock",
+          "targetType": "recipe",
+          "targetId": "make_lichttropfen"
+        },
+        {
+          "op": "unlock",
+          "targetType": "combatEncounter",
+          "targetId": "playground_shadow"
+        },
+        {
+          "op": "flag.set",
+          "flagId": "encounter_playground_shadow_unlocked",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "juan_listened",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "juan_playground",
+        "choiceId": "listen"
+      },
+      "when": {
+        "all": []
+      },
+      "effects": [
+        {
+          "op": "relationship.adjust",
+          "characterId": "juan",
+          "amount": 1
+        },
+        {
+          "op": "flag.set",
+          "flagId": "juan_listened",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

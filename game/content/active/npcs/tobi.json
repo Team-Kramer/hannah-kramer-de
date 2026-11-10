@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "npcs": [
+    {
+      "id": "tobi",
+      "displayNameKey": "npc.tobi.name",
+      "portraitAssetId": "portrait_tobi",
+      "initialRelationship": 0
+    }
+  ],
+  "conversations": [
+    {
+      "id": "tobi_wishes",
+      "npcId": "tobi",
+      "entryCondition": {
+        "all": [
+          { "path": "story.visited.lina_wishing", "op": "eq", "value": true }
+        ]
+      },
+      "startNodeId": "wish",
+      "nodes": [
+        {
+          "id": "wish",
+          "type": "line",
+          "speakerId": "tobi",
+          "textKey": "conversation.tobi_wishes.wish.text",
+          "illustrationAssetId": "portrait_tobi",
+          "choices": [
+            {
+              "id": "listen",
+              "labelKey": "conversation.tobi_wishes.wish.listen.label",
+              "effects": [],
+              "to": "thanks"
+            },
+            {
+              "id": "distract",
+              "labelKey": "conversation.tobi_wishes.wish.distract.label",
+              "effects": [],
+              "to": "later"
+            }
+          ]
+        },
+        {
+          "id": "thanks",
+          "type": "line",
+          "speakerId": "tobi",
+          "textKey": "conversation.tobi_wishes.thanks.text",
+          "illustrationAssetId": "portrait_tobi",
+          "choices": []
+        },
+        {
+          "id": "later",
+          "type": "line",
+          "speakerId": "tobi",
+          "textKey": "conversation.tobi_wishes.later.text",
+          "illustrationAssetId": "portrait_tobi",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}

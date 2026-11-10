@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "story": {
+    "id": "story_relationships",
+    "titleKey": "story_relationships.title",
+    "startNodeId": "rel_beat_start",
+    "nodes": [
+      {
+        "id": "rel_beat_start",
+        "type": "storyBeat",
+        "locationId": "test_clearing",
+        "captionKey": "story_relationships.beat_start.caption",
+        "transitions": [ { "id": "to_talk", "to": "bruno_talk" } ]
+      },
+      {
+        "id": "bruno_talk",
+        "type": "conversation",
+        "locationId": "test_clearing",
+        "conversationId": "bruno_talk",
+        "captionKey": "story_relationships.bruno_talk.caption",
+        "transitions": [ { "id": "to_choice", "to": "rel_choice" } ]
+      },
+      {
+        "id": "rel_choice",
+        "type": "decision",
+        "locationId": "test_clearing",
+        "promptKey": "story_relationships.rel_choice.prompt",
+        "choices": [
+          {
+            "id": "trust_mira",
+            "labelKey": "story_relationships.rel_choice.trust_mira.label",
+            "when": { "all": [ { "path": "relationships.mira", "op": "gte", "value": 2 } ] },
+            "effects": [],
+            "to": "outcome_warm"
+          },
+          {
+            "id": "walk_on",
+            "labelKey": "story_relationships.rel_choice.walk_on.label",
+            "when": { "all": [] },
+            "effects": [],
+            "to": "outcome_neutral"
+          }
+        ]
+      },
+      {
+        "id": "outcome_warm",
+        "type": "outcome",
+        "locationId": "test_clearing",
+        "captionKey": "story_relationships.outcome_warm.caption",
+        "effects": [
+          { "op": "relationship.adjust", "characterId": "mira", "amount": 1 }
+        ]
+      },
+      {
+        "id": "outcome_neutral",
+        "type": "outcome",
+        "locationId": "test_clearing",
+        "captionKey": "story_relationships.outcome_neutral.caption"
+      }
+    ]
+  }
+}

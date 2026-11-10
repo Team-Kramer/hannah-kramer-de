@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "npcs": [
+    {
+      "id": "juan",
+      "displayNameKey": "npc.juan.name",
+      "portraitAssetId": "portrait_juan",
+      "initialRelationship": 0
+    }
+  ],
+  "conversations": [
+    {
+      "id": "juan_wishes",
+      "npcId": "juan",
+      "entryCondition": {
+        "all": [
+          { "path": "story.visited.hannah_listening", "op": "eq", "value": true }
+        ]
+      },
+      "startNodeId": "wish",
+      "nodes": [
+        {
+          "id": "wish",
+          "type": "line",
+          "speakerId": "juan",
+          "textKey": "conversation.juan_wishes.wish.text",
+          "illustrationAssetId": "illus_juan_edge",
+          "choices": [
+            {
+              "id": "listen",
+              "labelKey": "conversation.juan_wishes.wish.listen.label",
+              "effects": [],
+              "to": "thanks"
+            },
+            {
+              "id": "distract",
+              "labelKey": "conversation.juan_wishes.wish.distract.label",
+              "effects": [],
+              "to": "later"
+            }
+          ]
+        },
+        {
+          "id": "thanks",
+          "type": "line",
+          "speakerId": "juan",
+          "textKey": "conversation.juan_wishes.thanks.text",
+          "illustrationAssetId": "portrait_juan",
+          "choices": []
+        },
+        {
+          "id": "later",
+          "type": "line",
+          "speakerId": "juan",
+          "textKey": "conversation.juan_wishes.later.text",
+          "illustrationAssetId": "portrait_juan",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}

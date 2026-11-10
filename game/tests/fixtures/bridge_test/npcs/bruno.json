@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "packId": "bridge_test",
+  "npcs": [
+    {
+      "id": "bruno",
+      "displayNameKey": "npc.bruno.name",
+      "initialRelationship": 0
+    }
+  ],
+  "conversations": [
+    {
+      "id": "bruno_talk",
+      "npcId": "bruno",
+      "entryCondition": { "all": [] },
+      "startNodeId": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "line",
+          "speakerId": "bruno",
+          "textKey": "conversation.bruno_talk.n1.text",
+          "choices": [
+            {
+              "id": "0",
+              "labelKey": "conversation.bruno_talk.n1.c1.label",
+              "effects": [],
+              "to": "n2"
+            },
+            {
+              "id": "1",
+              "labelKey": "conversation.bruno_talk.n1.c2.label",
+              "effects": [
+                { "op": "relationship.adjust", "characterId": "bruno", "amount": 1 }
+              ],
+              "to": "n2"
+            }
+          ]
+        },
+        {
+          "id": "n2",
+          "type": "line",
+          "speakerId": "bruno",
+          "textKey": "conversation.bruno_talk.n2.text",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}

@@ -46,7 +46,7 @@ jobs:
       - name: Build (prerender)
         run: pnpm build
 
-      # Godot Web export (D8). Skipped when game/ is unchanged.
+      # Godot Web export (D8). Built on each Pages run because the game ships in the site artifact.
       - name: Godot Web export
         if: hashFiles('game/**') != ''
         run: |
@@ -72,6 +72,8 @@ jobs:
           # (it loaded the woff at startup, before the import could run, which
           # cancelled the font's own import on a fresh checkout).
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game --import
+          "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \
+            --script res://tests/test_missions.gd
           mkdir -p game/.export/web
           "$GODOT_DIR/Godot_v${GODOT_VERSION}_linux.x86_64" --headless --path game \
             --export-release "The Best Game Ever" "$GITHUB_WORKSPACE/game/.export/web/index.html"

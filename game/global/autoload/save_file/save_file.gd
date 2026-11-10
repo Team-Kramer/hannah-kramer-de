@@ -15,6 +15,13 @@ var save_datas: Dictionary = {}
 var default_save_data: Dictionary = {}
 
 var resources: Dictionary = {}
+var mission_state: Dictionary = {
+	"completed": {},
+	"unlocks": [],
+	"mut_sterne": 0,
+	"rhythmus": 0,
+	"schatten_der_eile": 0
+}
 var workers: Dictionary = {}
 var substances: Dictionary = {}
 var events: Dictionary = {}
@@ -36,9 +43,15 @@ var effect_settings: Dictionary = {
 }
 var npc_events: Dictionary = {}
 var enemy: Dictionary = {"level": "rabbit", "rabbit": {"damage": 0}}
+## The rule-engine story state (resources, relationships, flags, story runtime,
+## unlocks, processed events). null when no story run is active. Owned by the
+## RuleBridge, which exports/imports it for save/resume (PG-07).
+## Typed Variant because null is a meaningful state, not just "unset".
+var story_state: Variant = null
 var metadata: Dictionary = {}
 var locale: String = "en"
 var _last_locale: String = "en"
+var _active_content_version: String = ""
 
 @onready var autosave_timer: Timer = %AutosaveTimer
 
@@ -49,6 +62,7 @@ var _last_locale: String = "en"
 
 func _ready() -> void:
 	default_save_data = _export_save_data()
+	_active_content_version = _get_active_content_version()
 
 	_load_save_files()
 	_connect_signals()
@@ -369,6 +383,7 @@ func prestige(infinity_count: int) -> void:
 	tab_levels = {"world": 0}
 	npc_events = {}
 	enemy = {"level": "rabbit", "rabbit": {"damage": 0}}
+	story_state = null
 
 	# write save file data
 	var file_name: String = active_file_name
@@ -493,10 +508,22 @@ func _autosave(force: bool = false, silent: bool = false) -> void:
 	if not silent:
 		SignalBus.autosave.emit(seconds_delta, AUTOSAVE_SECONDS)
 
+	SignalBus.save_requested.emit()
 	var file_name: String = active_file_name
 	_update_metadata()
 	var save_data: Dictionary = _export_save_data()
 	_write(file_name, save_data)
+
+
+func save_now() -> void:
+	if not Game.PARAMS["save_system_enabled"]:
+		return
+	SignalBus.save_requested.emit()
+	_update_metadata()
+	var save_data: Dictionary = _export_save_data()
+	_write(active_file_name, save_data)
+	# _write only touches disk; keep the in-memory picker data in sync.
+	save_datas[active_file_name.trim_suffix(SAVE_FILE_EXTENSION)] = save_data
 
 
 func _get_seconds_since_last_autosave() -> int:
@@ -519,6 +546,7 @@ func _load_save_files() -> void:
 				print("__SKIP_SAVE_DATA: " + file_name)
 			continue
 		var save_data: Dictionary = _read(file_name)
+		_check_content_reset(save_data)
 		_check_backward_compatibility(save_data)
 		if Game.PARAMS["debug_logs"]:
 			print("__LOAD_SAVE_DATA: " + file_name)
@@ -532,6 +560,7 @@ func _load_save_files() -> void:
 func _export_save_data() -> Dictionary:
 	var save_data: Dictionary = {}
 	save_data["resources"] = resources
+	save_data["mission_state"] = mission_state.duplicate(true)
 	save_data["workers"] = workers
 	save_data["substances"] = substances
 	save_data["events"] = events
@@ -545,13 +574,16 @@ func _export_save_data() -> Dictionary:
 	save_data["effect_settings"] = effect_settings
 	save_data["npc_events"] = npc_events
 	save_data["enemy"] = enemy
+	save_data["story_state"] = story_state
 	save_data["metadata"] = metadata
 	save_data["LOCALE"] = locale
+	save_data["content_version"] = _active_content_version
 	return save_data
 
 
 func _import_save_data(save_data: Dictionary) -> void:
 	resources = _get_resources(save_data)
+	mission_state = _get_mission_state(save_data)
 	workers = _get_workers(save_data)
 	substances = _get_substances(save_data)
 	events = _get_events(save_data)
@@ -565,6 +597,7 @@ func _import_save_data(save_data: Dictionary) -> void:
 	effect_settings = _get_effect_settings(save_data)
 	npc_events = _get_npc_events(save_data)
 	enemy = _get_enemy(save_data)
+	story_state = _get_story_state(save_data)
 	metadata = _get_metadata(save_data)
 	locale = _get_locale(save_data)
 
@@ -576,6 +609,37 @@ func _import_save_data(save_data: Dictionary) -> void:
 
 func _get_resources(save_data: Dictionary) -> Dictionary:
 	return save_data.get("resources", resources)
+
+
+func _get_mission_state(save_data: Dictionary) -> Dictionary:
+	var defaults: Dictionary = {
+		"completed": {},
+		"unlocks": [],
+		"mut_sterne": 0,
+		"rhythmus": 0,
+		"schatten_der_eile": 0
+	}
+	var stored_state: Variant = save_data.get("mission_state", {})
+	if not stored_state is Dictionary:
+		push_warning("Ignoring invalid mission_state in save data.")
+		return defaults
+
+	for field: String in defaults:
+		if not stored_state.has(field):
+			continue
+		var value: Variant = stored_state[field]
+		var is_valid: bool = typeof(value) == typeof(defaults[field])
+		if not is_valid and typeof(defaults[field]) == TYPE_INT:
+			# JSON parses all numbers as floats; accept floats for int fields.
+			is_valid = typeof(value) == TYPE_FLOAT
+		if not is_valid:
+			push_warning("Ignoring invalid mission_state.%s in save data." % field)
+			continue
+		if typeof(defaults[field]) == TYPE_INT:
+			defaults[field] = int(value)
+		else:
+			defaults[field] = value
+	return defaults
 
 
 func _get_workers(save_data: Dictionary) -> Dictionary:
@@ -630,6 +694,10 @@ func _get_enemy(save_data: Dictionary) -> Dictionary:
 	return save_data.get("enemy", enemy)
 
 
+func _get_story_state(save_data: Dictionary) -> Variant:
+	return save_data.get("story_state", story_state)
+
+
 func _get_metadata(save_data: Dictionary) -> Dictionary:
 	return save_data.get("metadata", metadata)
 
@@ -667,6 +735,59 @@ func _sanitize_timezone(timezone: Dictionary) -> void:
 
 func _get_save_file_name(save_data: Dictionary) -> String:
 	return save_data["metadata"].get("save_file_name", "")
+
+
+## PF-02: content reset on content-version change.
+##
+## When the active content package's `contentVersion` differs from the version
+## a save was written under, the save's *content* state (resources, mission
+## state, workers, substances, events, unlocks, npc_events, enemy) is reset to
+## defaults so legacy IDs are never silently reinterpreted as new entities.
+## Player *settings* (settings, audio, effects, locale, metadata) are preserved.
+func _check_content_reset(save_data: Dictionary) -> void:
+	var active_version: String = _active_content_version
+	if active_version == "":
+		return
+	var saved_version: String = str(save_data.get("content_version", ""))
+	if saved_version == active_version:
+		return
+	if Game.PARAMS["debug_logs"]:
+		print("__CONTENT_RESET: save '%s' (%s) -> active '%s'" % [
+			save_data.get("metadata", {}).get("save_file_name", "?"), saved_version, active_version
+		])
+	_reset_content_state(save_data)
+
+
+## Read the active package's contentVersion ("" when no package is deployed).
+func _get_active_content_version() -> String:
+	var dir: String = "res://content/active"
+	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(dir)):
+		return ""
+	var manifest_path: String = dir.path_join("manifest.json")
+	if not FileAccess.file_exists(ProjectSettings.globalize_path(manifest_path)):
+		return ""
+	var file: FileAccess = FileAccess.open(manifest_path, FileAccess.READ)
+	if file == null:
+		return ""
+	var text: String = file.get_as_text()
+	file.close()
+	var parsed: Variant = JSON.parse_string(text)
+	if not (parsed is Dictionary):
+		return ""
+	return str(parsed.get("contentVersion", ""))
+
+
+## Replace content state with defaults, keeping player settings intact.
+func _reset_content_state(save_data: Dictionary) -> void:
+	var fresh: Dictionary = _export_save_data()
+	for key: String in [
+		"resources", "mission_state", "workers", "substances",
+		"events", "event_log", "resource_generator_unlocks",
+		"worker_role_unlocks", "tab_unlocks", "tab_levels",
+		"npc_events", "enemy", "story_state",
+	]:
+		save_data[key] = fresh[key]
+	save_data["content_version"] = _active_content_version
 
 
 func _check_backward_compatibility(save_data: Dictionary) -> void:

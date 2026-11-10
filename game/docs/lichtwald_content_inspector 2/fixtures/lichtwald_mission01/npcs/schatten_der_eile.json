@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "npcs": [
+    {
+      "id": "schatten_der_eile",
+      "displayNameKey": "npc.schatten_der_eile.name",
+      "portraitAssetId": "illus_schatten_der_eile",
+      "initialRelationship": -10
+    }
+  ],
+  "conversations": [
+    {
+      "id": "shadow_whisper",
+      "npcId": "schatten_der_eile",
+      "entryCondition": {
+        "all": [
+          { "path": "story.visited.middle", "op": "eq", "value": true }
+        ]
+      },
+      "startNodeId": "whisper",
+      "nodes": [
+        {
+          "id": "whisper",
+          "type": "line",
+          "speakerId": "schatten_der_eile",
+          "textKey": "conversation.shadow_whisper.whisper.text",
+          "illustrationAssetId": "illus_shadow_whisper",
+          "choices": [
+            {
+              "id": "stand_firm",
+              "labelKey": "conversation.shadow_whisper.whisper.stand_firm.label",
+              "effects": [],
+              "to": "fade"
+            }
+          ]
+        },
+        {
+          "id": "fade",
+          "type": "line",
+          "speakerId": "schatten_der_eile",
+          "textKey": "conversation.shadow_whisper.fade.text",
+          "illustrationAssetId": "illus_schatten_der_eile",
+          "choices": []
+        }
+      ]
+    }
+  ]
+}

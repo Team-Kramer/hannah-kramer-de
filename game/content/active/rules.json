@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "packId": "lichtwald",
+  "rules": [
+    {
+      "id": "unlock_schatten_der_eile",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "hannah_listening",
+        "choiceId": "weiter"
+      },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "unlock", "targetType": "combatEncounter", "targetId": "encounter_schatten_der_eile" },
+        { "op": "flag.set", "flagId": "encounter_schatten_der_eile_unlocked", "value": true }
+      ]
+    },
+    {
+      "id": "juan_listened",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "juan_wishes",
+        "choiceId": "listen"
+      },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "relationship.adjust", "characterId": "juan", "amount": 5 },
+        { "op": "flag.set", "flagId": "juan_listened", "value": true }
+      ]
+    },
+    {
+      "id": "lina_listened",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "lina_wishes",
+        "choiceId": "listen"
+      },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "relationship.adjust", "characterId": "lina", "amount": 5 },
+        { "op": "flag.set", "flagId": "lina_listened", "value": true }
+      ]
+    },
+    {
+      "id": "tobi_listened",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "tobi_wishes",
+        "choiceId": "listen"
+      },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "relationship.adjust", "characterId": "tobi", "amount": 5 },
+        { "op": "flag.set", "flagId": "tobi_listened", "value": true }
+      ]
+    },
+    {
+      "id": "oma_linde_listened",
+      "trigger": {
+        "event": "conversation.choice",
+        "conversationId": "oma_linde_wishes",
+        "choiceId": "listen"
+      },
+      "when": { "all": [] },
+      "effects": [
+        { "op": "relationship.adjust", "characterId": "oma_linde", "amount": 5 },
+        { "op": "flag.set", "flagId": "oma_linde_listened", "value": true }
+      ]
+    }
+  ]
+}

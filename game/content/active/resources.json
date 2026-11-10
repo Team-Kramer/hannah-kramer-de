@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "resources": [
+    {
+      "id": "lichttropfen",
+      "kind": "stock",
+      "nameKey": "resource.lichttropfen.name",
+      "iconAssetId": "icon_lichttropfen",
+      "initialAmount": 120,
+      "bounds": { "min": 0, "max": 999 }
+    },
+    {
+      "id": "mut_sterne",
+      "kind": "stock",
+      "nameKey": "resource.mut_sterne.name",
+      "iconAssetId": "icon_mut_sterne",
+      "initialAmount": 0,
+      "bounds": { "min": 0, "max": 999 }
+    },
+    {
+      "id": "freundschaft",
+      "kind": "stock",
+      "nameKey": "resource.freundschaft.name",
+      "iconAssetId": "icon_freundschaft",
+      "initialAmount": 0,
+      "bounds": { "min": 0, "max": 999 }
+    }
+  ],
+  "producers": [],
+  "recipes": [],
+  "workerRoles": []
+}

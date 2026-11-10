@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=11 format=3 uid="uid://be30ymqku7twp"]
 
-[ext_resource type="FontFile" uid="uid://q32pdsh1f0q8" path="res://assets/font/noto_sans/woff/noto_sans.woff" id="1_f3vby"]
+[ext_resource type="FontFile" uid="uid://bj38fdx6ujlum" path="res://assets/font/noto_sans/woff/noto_sans.woff" id="1_f3vby"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ds5vx"]
 content_margin_left = 4.0
